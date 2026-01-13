@@ -1,6 +1,7 @@
 from dotenv import load_dotenv 
 import os
 from peewee import *
+import uuid
 load_dotenv()
 
 postgres_db = PostgresqlDatabase(
@@ -21,3 +22,11 @@ def connect_to_db(app):
 class BaseModel(Model):
     class Meta:
         database = postgres_db
+
+class Coin(BaseModel):
+    id = UUIDField(primary_key=True, default=uuid.uuid4)
+    name = CharField(80)
+    description = CharField(255)
+    class Meta:
+        table_name='coins'
+
