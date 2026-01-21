@@ -4,24 +4,30 @@ from peewee import *
 import uuid
 load_dotenv()
 
-postgres_db = PostgresqlDatabase(
+database = DatabaseProxy()
+
+TEST_DB = SqliteDatabase(':memory:')
+
+PG_DB = PostgresqlDatabase(
     os.getenv('DB_NAME'), 
     user=os.getenv('DB_USERNAME'), 
     host=os.getenv('DB_HOST'), 
     password=os.getenv('DB_PASSWORD'), 
     port=os.getenv('DB_PORT'))
 
-def connect_to_db(app):
+def connect_to_db(app, db):
     try:
-        postgres_db.connect(reuse_if_open=True)
-        print('db connection successful')
+        database.initialize(db)
+        database.connect(reuse_if_open=True)
     except OperationalError as e:
         app.logger.error(f'DB connection error: {e}')
+        database.close()
         raise
+        
 
 class BaseModel(Model):
     class Meta:
-        database = postgres_db
+        database = database
 
 class Coin(BaseModel):
     id = UUIDField(primary_key=True, default=uuid.uuid4)

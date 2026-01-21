@@ -2,18 +2,23 @@ import pytest
 from db import *
 from app import app
 
-app.testing = True
-testApp = app.test_client()
-
-@pytest.fixture(autouse=True)
-def setup_table():
-    postgres_db.bind([Coin], bind_refs=False, bind_backrefs=False)
-    connect_to_db(app)
-    postgres_db.create_tables([Coin])
+@pytest.fixture(scope='session')
+def setup_test_db():
+    connect_to_db(app, TEST_DB)
+    TEST_DB.create_tables([Coin])
+    
     yield
-    postgres_db.drop_tables([Coin])
-    postgres_db.close()
 
-def test_get_all_coins():
-    response = testApp.get('/coins')
-    assert response.status_code is 200
+    TEST_DB.drop_tables([Coin])
+    TEST_DB.close()
+
+@pytest.fixture
+def client(setup_test_db):
+    app.testing = True
+    with app.test_client() as client:
+        yield client
+
+
+def test_get_all_coins(client):
+    response = client.get("/coins")
+    assert response.status_code == 200
