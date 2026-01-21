@@ -6,6 +6,7 @@ from app import app
 def setup_test_db():
     connect_to_db(app, TEST_DB)
     TEST_DB.create_tables([Coin])
+    Coin.create(name='automate', description='automation')
     
     yield
 
@@ -22,3 +23,5 @@ def client(setup_test_db):
 def test_get_all_coins(client):
     response = client.get("/coins")
     assert response.status_code == 200
+    assert 'automate' in response.text
+    assert 'automation' in response.text

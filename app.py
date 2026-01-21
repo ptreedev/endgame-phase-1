@@ -1,5 +1,6 @@
-from flask import Flask
-from db import connect_to_db, PG_DB, database
+from flask import Flask, jsonify
+from db import Coin, connect_to_db, PG_DB, database
+from playhouse.shortcuts import model_to_dict
 
 app = Flask(__name__)
 
@@ -15,7 +16,8 @@ def _db_close(exc):
 
 @app.get('/coins')
 def get_all_coins():
-    return '', 200
+    formatted_query = [coin for coin in Coin.select().dicts()]
+    return jsonify(formatted_query)
 
 
 if __name__ == '__main__':
