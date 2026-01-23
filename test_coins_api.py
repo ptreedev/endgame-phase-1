@@ -34,6 +34,19 @@ def test_get_coin_by_id(client):
     expected_id = f'{coins_id}'
     expected_name = 'automate'
     expected_desc = 'automation'
+    assert response.status_code == 200
     assert expected_id in response.text
     assert expected_name in response.text
     assert expected_desc in response.text
+
+def test_create_coin(client):
+    new_coin = {
+        'name': 'houston',
+        'description': 'houstonate'
+    }
+    response = client.post('/coins', json = new_coin)
+    created_coin = response.data.decode()
+    assert response.status_code is 201
+    for column, row in new_coin.items():
+        assert column in created_coin
+        assert row in created_coin
