@@ -44,6 +44,13 @@ def delete_coin_by_id(coin_id):
         return {'message': 'resource not found'}, 404
     return '', 204
 
+@app.patch('/coin/<coin_id>')
+def patch_coin_by_id(coin_id):
+    body = request.get_json()
+    patch_coin = Coin.update({Coin.name: body['name']}).where(Coin.id == coin_id)
+    patch_coin.execute()
+    updated_coin = model_to_dict(Coin.get_by_id(coin_id))
+    return updated_coin, 200
 
 if __name__ == '__main__':
     app.run(debug=True)

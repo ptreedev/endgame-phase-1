@@ -23,6 +23,7 @@ def client(setup_test_db):
 
 def test_get_all_coins(client):
     response = client.get('/coins')
+    print(response.text)
     assert response.status_code == 200
     assert 'automate' in response.text
     assert 'automation' in response.text
@@ -68,6 +69,17 @@ def test_delete_coin_by_id(client):
     # try to delete by id again to test error
     response_2 = client.delete(f'/coin/{coin_id}')
     assert response_2.status_code == 404
+
+def test_patch_coin_by_id(client):
+    patch_body = {
+        'name': 'autoauto'
+    }
+    coins = client.get('/coins')
+    coin_id = coins.get_json()[0]['id']
+    response = client.patch(f'/coin/{coin_id}', json = patch_body)
+    assert response.status_code == 200
+    assert 'autoauto' in response.text
+
     
 
     
