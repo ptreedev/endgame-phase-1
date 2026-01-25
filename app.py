@@ -1,6 +1,7 @@
 from flask import Flask, request
 from db import Coin, connect_to_db, PG_DB, database
 from playhouse.shortcuts import model_to_dict
+from peewee import IntegrityError
 
 app = Flask(__name__)
 
@@ -27,9 +28,12 @@ def get_coin_by_id(coin_id):
 
 @app.post('/coins')
 def create_coin():
-    body = request.get_json()
-    created_coin = Coin.create(name = body['name'], description = body['description'])
-    return model_to_dict(created_coin), 201
+    try: 
+        body = request.get_json()
+        created_coin = Coin.create(name = body['name'], description = body['description'])
+        return model_to_dict(created_coin), 201
+    except IntegrityError:
+        return 'bad request', 400
 
 if __name__ == '__main__':
     app.run(debug=True)

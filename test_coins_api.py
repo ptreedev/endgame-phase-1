@@ -42,7 +42,7 @@ def test_get_coin_by_id(client):
 def test_create_coin(client):
     new_coin = {
         'name': 'houston',
-        'description': 'houstonate'
+        'description': 'houstonation'
     }
     response = client.post('/coins', json = new_coin)
     created_coin = response.data.decode()
@@ -50,3 +50,13 @@ def test_create_coin(client):
     for column, row in new_coin.items():
         assert column in created_coin
         assert row in created_coin
+
+def test_create_coin_no_duplication(client):
+    dupe_coin = {
+        'name': 'automate',
+        'description': 'automation'
+    }
+    response = client.post('/coins', json = dupe_coin)
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+    
