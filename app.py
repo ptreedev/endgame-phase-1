@@ -20,7 +20,7 @@ def get_all_coins():
     formatted_query = [coin for coin in Coin.select().dicts()]
     return formatted_query
 
-@app.get('/coins/<coin_id>')
+@app.get('/coin/<coin_id>')
 def get_coin_by_id(coin_id):
     coin = Coin.get_by_id(coin_id)
     format_coin = model_to_dict(coin)
@@ -33,7 +33,17 @@ def create_coin():
         created_coin = Coin.create(name = body['name'], description = body['description'])
         return model_to_dict(created_coin), 201
     except IntegrityError:
-        return 'bad request', 400
+        error = {'error': 'bad request',
+                'message': 'name already exists'}
+        return error, 400
+    
+@app.delete('/coin/<coin_id>')
+def delete_coin_by_id(coin_id):
+    delete_query = Coin.delete_by_id(coin_id)
+    if(delete_query == 0):
+        return {'message': 'resource not found'}, 404
+    return '', 204
+
 
 if __name__ == '__main__':
     app.run(debug=True)

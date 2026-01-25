@@ -29,9 +29,9 @@ def test_get_all_coins(client):
 
 def test_get_coin_by_id(client):
     coins = client.get('/coins')
-    coins_id = coins.get_json()[0]['id']
-    response = client.get(f'/coins/{coins_id}')
-    expected_id = f'{coins_id}'
+    coin_id = coins.get_json()[0]['id']
+    response = client.get(f'/coin/{coin_id}')
+    expected_id = f'{coin_id}'
     expected_name = 'automate'
     expected_desc = 'automation'
     assert response.status_code == 200
@@ -46,7 +46,7 @@ def test_create_coin(client):
     }
     response = client.post('/coins', json = new_coin)
     created_coin = response.data.decode()
-    assert response.status_code is 201
+    assert response.status_code == 201
     for column, row in new_coin.items():
         assert column in created_coin
         assert row in created_coin
@@ -59,4 +59,15 @@ def test_create_coin_no_duplication(client):
     response = client.post('/coins', json = dupe_coin)
     assert response.status_code == 400
     assert 'bad request' in response.text
+
+def test_delete_coin_by_id(client):
+    coins = client.get('/coins')
+    coin_id = coins.get_json()[0]['id']
+    response = client.delete(f'/coin/{coin_id}')
+    assert response.status_code == 204
+    # try to delete by id again to test error
+    response_2 = client.delete(f'/coin/{coin_id}')
+    assert response_2.status_code == 404
+    
+
     
