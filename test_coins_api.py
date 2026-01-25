@@ -103,3 +103,29 @@ def test_patch_coin_2_fields(client):
     assert response.status_code == 200
     assert 'autoauto' in response.text
     assert 'bananation' in response.text
+
+def test_patch_coin_no_fields(client):
+    patch_body = { }    
+    coins = client.get('/coins')
+    coin_id = coins.get_json()[0]['id']
+    response = client.patch(f'/coin/{coin_id}', json = patch_body)
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+
+def test_patch_coin_invalid_field(client):
+    patch_body = {
+        'invalid_field': 'some_value'
+    }    
+    coins = client.get('/coins')
+    coin_id = coins.get_json()[0]['id']
+    response = client.patch(f'/coin/{coin_id}', json = patch_body)
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+
+def test_patch_coin_invalid_id(client):
+    patch_body = {
+        'name': 'autoauto'
+    }    
+    invalid_id = 9999
+    response = client.patch(f'/coin/{invalid_id}', json = patch_body)
+    assert response.status_code == 404

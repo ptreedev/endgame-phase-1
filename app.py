@@ -48,16 +48,24 @@ def delete_coin_by_id(coin_id):
 def patch_coin_by_id(coin_id):
     body = request.get_json()
 
+    if not body:
+        return {'message': 'bad request'}, 400
+
     allowed_fields = {'name', 'description'}
     update_data = {
         getattr(Coin, key): value
         for key, value in body.items()
         if key in allowed_fields
     }
-
+    if not update_data:
+        return {'message': 'bad request'}, 400
+    
     query = Coin.update(update_data).where(Coin.id == coin_id)
-    query.execute()
+    rows_updated = query.execute()
 
+    if rows_updated == 0:
+        return {'message': 'Coin not found'}, 404
+    
     updated_coin = model_to_dict(Coin.get_by_id(coin_id))
     return updated_coin, 200
 
