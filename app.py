@@ -47,10 +47,20 @@ def delete_coin_by_id(coin_id):
 @app.patch('/coin/<coin_id>')
 def patch_coin_by_id(coin_id):
     body = request.get_json()
-    patch_coin = Coin.update({Coin.name: body['name']}).where(Coin.id == coin_id)
-    patch_coin.execute()
+
+    allowed_fields = {'name', 'description'}
+    update_data = {
+        getattr(Coin, key): value
+        for key, value in body.items()
+        if key in allowed_fields
+    }
+
+    query = Coin.update(update_data).where(Coin.id == coin_id)
+    query.execute()
+
     updated_coin = model_to_dict(Coin.get_by_id(coin_id))
     return updated_coin, 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
