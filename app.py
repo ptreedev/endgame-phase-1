@@ -1,5 +1,5 @@
 from flask import Flask, request
-from db import Coin, connect_to_db, PG_DB, database
+from db import Coin, Duty, connect_to_db, PG_DB, database
 from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError
 
@@ -69,6 +69,10 @@ def patch_coin_by_id(coin_id):
     updated_coin = model_to_dict(Coin.get_by_id(coin_id))
     return updated_coin, 200
 
+@app.get('/duties')
+def get_all_duties():
+    formatted_query = [duty for duty in Duty.select().dicts()]
+    return formatted_query
 
 if __name__ == '__main__':
     app.run(debug=True)
