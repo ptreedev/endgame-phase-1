@@ -86,6 +86,13 @@ def get_duty_by_id(duty_id):
     except DoesNotExist:
         return {'message': 'Resource not found'}, 404
 
+@app.post('/duties')
+def create_duty():
+    body = request.get_json()
+    created_duty = Duty.create(name=body['name'], description=body['description'])
+    return model_to_dict(created_duty), 201
+    
+
 if __name__ == '__main__':
     app.run(debug=True)
 
