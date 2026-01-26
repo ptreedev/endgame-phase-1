@@ -35,9 +35,9 @@ def create_coin():
         body = request.get_json()
         created_coin = Coin.create(name = body['name'], description = body['description'])
         return model_to_dict(created_coin), 201
-    except IntegrityError:
+    except (IntegrityError, KeyError):
         error = {'error': 'bad request',
-                'message': 'name already exists'}
+                'message': 'bad or missing fields'}
         return error, 400
     
 @app.delete('/coin/<coin_id>')

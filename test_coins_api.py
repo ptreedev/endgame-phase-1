@@ -42,6 +42,14 @@ def test_POST_coin_no_duplication(client):
     assert response.status_code == 400
     assert 'bad request' in response.text
 
+def test_POST_coin_missing_field(client):
+    incomplete_coin = {
+        'name': 'banana'
+    }
+    response = client.post('/coins', json = incomplete_coin)
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+
 def test_DELETE_coin_by_id(client):
     coins = client.get('/coins')
     coin_id = coins.get_json()[0]['id']
