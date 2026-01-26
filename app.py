@@ -74,6 +74,12 @@ def get_all_duties():
     formatted_query = [duty for duty in Duty.select().dicts()]
     return formatted_query
 
+@app.get('/duty/<duty_id>')
+def get_duty_by_id(duty_id):
+    duty = Duty.get_by_id(duty_id)
+    format_duty = model_to_dict(duty)
+    return format_duty
+
 if __name__ == '__main__':
     app.run(debug=True)
 
