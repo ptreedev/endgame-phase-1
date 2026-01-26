@@ -59,3 +59,11 @@ def test_POST_duty_missing_field(client):
     response = client.post('/duties', json=incomplete_duty)
     assert response.status_code == 400
     assert 'bad request' in response.text
+
+def test_DELETE_duty_by_id(client):
+    duties = client.get('/duties')
+    duty_id = duties.get_json()[0]['id']
+    response = client.delete(f'/duty/{duty_id}')
+    assert response.status_code == 204
+    response_2 = client.delete(f'/duty/{duty_id}')
+    assert response_2.status_code == 404

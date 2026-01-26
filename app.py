@@ -97,6 +97,12 @@ def create_duty():
                 'message': 'bad or missing fields'}
         return error, 400
 
+@app.delete('/duty/<duty_id>')
+def delete_duty_by_id(duty_id):
+    delete_query = Duty.delete_by_id(duty_id)
+    if(delete_query == 0):
+        return {'message': 'resource not found'}, 404
+    return '', 204
 
 if __name__ == '__main__':
     app.run(debug=True)
