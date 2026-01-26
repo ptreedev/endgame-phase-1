@@ -22,10 +22,13 @@ def get_all_coins():
 
 @app.get('/coin/<coin_id>')
 def get_coin_by_id(coin_id):
-    coin = Coin.get_by_id(coin_id)
-    format_coin = model_to_dict(coin)
-    return format_coin
-
+    try:
+        coin = Coin.get_by_id(coin_id)
+        format_coin = model_to_dict(coin)
+        return format_coin
+    except DoesNotExist:
+        return {'message': 'Resource not found'}, 404
+    
 @app.post('/coins')
 def create_coin():
     try: 

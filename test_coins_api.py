@@ -16,6 +16,11 @@ def test_get_coin_by_id(client):
     assert expected_name in response.text
     assert expected_desc in response.text
 
+def test_get_coin_by_invalid_id(client):
+    invalid_id = 9999
+    response = client.get(f'/coin/{invalid_id}')
+    assert response.status_code == 404
+
 def test_create_coin(client):
     new_coin = {
         'name': 'houston',
