@@ -36,3 +36,9 @@ class Coin(BaseModel):
     class Meta:
         table_name='coins'
 
+class Duty(BaseModel):
+    id = UUIDField(primary_key=True, default=uuid.uuid4)
+    name = CharField(80, unique = True)
+    description = CharField(255)
+    class Meta:
+        table_name='duties'
