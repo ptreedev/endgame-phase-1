@@ -42,4 +42,12 @@ def test_create_duty(client):
     for column, row in new_duty.items():
         assert column in created_duty
         assert row in created_duty
-        
+
+def test_create_duty_no_duplication(client):
+    dupe_duty = {
+        'name': 'D1',
+        'description': 'duty 1'
+    }
+    response = client.post('/duties', json=dupe_duty)
+    assert response.status_code == 400
+    assert 'bad request' in response.text

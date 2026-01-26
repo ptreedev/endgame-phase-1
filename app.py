@@ -88,10 +88,15 @@ def get_duty_by_id(duty_id):
 
 @app.post('/duties')
 def create_duty():
-    body = request.get_json()
-    created_duty = Duty.create(name=body['name'], description=body['description'])
-    return model_to_dict(created_duty), 201
-    
+    try: 
+        body = request.get_json()
+        created_duty = Duty.create(name = body['name'], description = body['description'])
+        return model_to_dict(created_duty), 201
+    except IntegrityError:
+        error = {'error': 'bad request',
+                'message': 'name already exists'}
+        return error, 400
+
 
 if __name__ == '__main__':
     app.run(debug=True)
