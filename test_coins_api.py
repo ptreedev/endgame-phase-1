@@ -1,10 +1,10 @@
-def test_get_all_coins(client):
+def test_GET_all_coins(client):
     response = client.get('/coins')
     assert response.status_code == 200
     assert 'automate' in response.text
     assert 'automation' in response.text
 
-def test_get_coin_by_id(client):
+def test_GET_coin_by_id(client):
     coins = client.get('/coins')
     coin_id = coins.get_json()[0]['id']
     response = client.get(f'/coin/{coin_id}')
@@ -16,12 +16,12 @@ def test_get_coin_by_id(client):
     assert expected_name in response.text
     assert expected_desc in response.text
 
-def test_get_coin_by_invalid_id(client):
+def test_GET_coin_by_invalid_id(client):
     invalid_id = 9999
     response = client.get(f'/coin/{invalid_id}')
     assert response.status_code == 404
 
-def test_create_coin(client):
+def test_POST_coin(client):
     new_coin = {
         'name': 'houston',
         'description': 'houstonation'
@@ -33,7 +33,7 @@ def test_create_coin(client):
         assert column in created_coin
         assert row in created_coin
 
-def test_create_coin_no_duplication(client):
+def test_POST_coin_no_duplication(client):
     dupe_coin = {
         'name': 'automate',
         'description': 'automation'
@@ -42,7 +42,7 @@ def test_create_coin_no_duplication(client):
     assert response.status_code == 400
     assert 'bad request' in response.text
 
-def test_delete_coin_by_id(client):
+def test_DELETE_coin_by_id(client):
     coins = client.get('/coins')
     coin_id = coins.get_json()[0]['id']
     response = client.delete(f'/coin/{coin_id}')
@@ -51,7 +51,7 @@ def test_delete_coin_by_id(client):
     response_2 = client.delete(f'/coin/{coin_id}')
     assert response_2.status_code == 404
 
-def test_patch_coin_name_by_id(client):
+def test_PATCH_coin_name_by_id(client):
     patch_body = {
         'name': 'autoauto'
     }
@@ -62,7 +62,7 @@ def test_patch_coin_name_by_id(client):
     assert 'autoauto' in response.text
     assert 'automation' in response.text
 
-def test_patch_coin_desc_by_id(client):
+def test_PATCH_coin_desc_by_id(client):
     patch_body = {
         'description': 'bananation'
     }
@@ -74,7 +74,7 @@ def test_patch_coin_desc_by_id(client):
     assert 'automate' in updated_coin
     assert 'bananation' in updated_coin
 
-def test_patch_coin_2_fields(client):
+def test_PATCH_coin_2_fields(client):
     patch_body = {
         'name': 'autoauto',
         'description': 'bananation'
@@ -86,7 +86,7 @@ def test_patch_coin_2_fields(client):
     assert 'autoauto' in response.text
     assert 'bananation' in response.text
 
-def test_patch_coin_no_fields(client):
+def test_PATCH_coin_no_fields(client):
     patch_body = { }    
     coins = client.get('/coins')
     coin_id = coins.get_json()[0]['id']
@@ -94,7 +94,7 @@ def test_patch_coin_no_fields(client):
     assert response.status_code == 400
     assert 'bad request' in response.text
 
-def test_patch_coin_invalid_field(client):
+def test_PATCH_coin_invalid_field(client):
     patch_body = {
         'invalid_field': 'some_value'
     }    
@@ -104,7 +104,7 @@ def test_patch_coin_invalid_field(client):
     assert response.status_code == 400
     assert 'bad request' in response.text
 
-def test_patch_coin_invalid_id(client):
+def test_PATCH_coin_invalid_id(client):
     patch_body = {
         'name': 'autoauto'
     }    
