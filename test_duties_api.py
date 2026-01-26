@@ -7,13 +7,13 @@
     # }, ...]
     # if calling a duty it should bring back associated coins
 
-def test_get_all_duties(client):
+def test_GET_all_duties(client):
     response = client.get('/duties')
     assert response.status_code == 200
     assert 'D1' in response.text
     assert 'duty 1' in response.text
 
-def test_get_duty_by_id(client):
+def test_GET_duty_by_id(client):
     duties = client.get('/duties')
     duty_id = duties.get_json()[0]['id']
     response = client.get(f'/duty/{duty_id}')
@@ -25,13 +25,13 @@ def test_get_duty_by_id(client):
     assert expected_name in response.text
     assert expected_desc in response.text
 
-def test_get_duty_by_invalid_id(client):
+def test_GET_duty_by_invalid_id(client):
     invalid_id = 9999
     response = client.get(f'/duty/{invalid_id}')
     assert response.status_code == 404
     assert 'Resource not found' in response.text
 
-def test_create_duty(client):
+def test_POST_duty(client):
     new_duty = {
         'name': 'D2',
         'description': 'duty 2'
@@ -43,7 +43,7 @@ def test_create_duty(client):
         assert column in created_duty
         assert row in created_duty
 
-def test_create_duty_no_duplication(client):
+def test_POST_duty_no_duplication(client):
     dupe_duty = {
         'name': 'D1',
         'description': 'duty 1'
