@@ -51,3 +51,11 @@ def test_POST_duty_no_duplication(client):
     response = client.post('/duties', json=dupe_duty)
     assert response.status_code == 400
     assert 'bad request' in response.text
+
+def test_POST_duty_missing_field(client):
+    incomplete_duty = {
+        'name': 'D3'
+    }
+    response = client.post('/duties', json=incomplete_duty)
+    assert response.status_code == 400
+    assert 'bad request' in response.text

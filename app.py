@@ -92,9 +92,9 @@ def create_duty():
         body = request.get_json()
         created_duty = Duty.create(name = body['name'], description = body['description'])
         return model_to_dict(created_duty), 201
-    except IntegrityError:
+    except (IntegrityError, KeyError) as e:
         error = {'error': 'bad request',
-                'message': 'name already exists'}
+                'message': 'bad or missing fields'}
         return error, 400
 
 
