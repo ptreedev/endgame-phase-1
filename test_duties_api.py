@@ -24,3 +24,8 @@ def test_get_duty_by_id(client):
     assert expected_id in response.text
     assert expected_name in response.text
     assert expected_desc in response.text
+
+def test_get_duty_by_invalid_id(client):
+    invalid_id = 9999
+    response = client.get(f'/duty/{invalid_id}')
+    assert response.status_code == 404

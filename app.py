@@ -1,7 +1,7 @@
 from flask import Flask, request
 from db import Coin, Duty, connect_to_db, PG_DB, database
 from playhouse.shortcuts import model_to_dict
-from peewee import IntegrityError
+from peewee import IntegrityError, DoesNotExist
 
 app = Flask(__name__)
 
@@ -76,9 +76,12 @@ def get_all_duties():
 
 @app.get('/duty/<duty_id>')
 def get_duty_by_id(duty_id):
-    duty = Duty.get_by_id(duty_id)
-    format_duty = model_to_dict(duty)
-    return format_duty
+    try:
+        duty = Duty.get_by_id(duty_id)
+        format_duty = model_to_dict(duty)
+        return format_duty
+    except DoesNotExist:
+        return {'message': 'Resource not found'}, 404
 
 if __name__ == '__main__':
     app.run(debug=True)
