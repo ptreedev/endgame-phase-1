@@ -42,3 +42,10 @@ class Duty(BaseModel):
     description = CharField(255)
     class Meta:
         table_name='duties'
+
+class CoinDuty(BaseModel):
+    coin = ForeignKeyField(Coin, backref='coin_duties', on_delete='CASCADE')
+    duty = ForeignKeyField(Duty, backref='coin_duties', on_delete='CASCADE')
+    class Meta:
+        table_name='coin_duties'
+        primary_key = CompositeKey('coin', 'duty')
