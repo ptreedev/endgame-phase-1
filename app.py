@@ -104,6 +104,31 @@ def delete_duty_by_id(duty_id):
         return {'message': 'resource not found'}, 404
     return '', 204
 
+@app.patch('/duty/<duty_id>')
+def patch_duty_by_id(duty_id):
+    body = request.get_json()
+
+    if not body:
+        return {'message': 'bad request'}, 400
+
+    allowed_fields = {'name', 'description'}
+    update_data = {
+        getattr(Duty, key): value
+        for key, value in body.items()
+        if key in allowed_fields
+    }
+    if not update_data:
+        return {'message': 'bad request'}, 400
+    
+    query = Duty.update(update_data).where(Duty.id == duty_id)
+    rows_updated = query.execute()
+
+    if rows_updated == 0:
+        return {'message': 'Resource not found'}, 404
+    
+    updated_duty = model_to_dict(Duty.get_by_id(duty_id))
+    return updated_duty, 200
+
 if __name__ == '__main__':
     app.run(debug=True)
 

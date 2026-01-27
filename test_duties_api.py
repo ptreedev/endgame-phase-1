@@ -67,3 +67,55 @@ def test_DELETE_duty_by_id(client):
     assert response.status_code == 204
     response_2 = client.delete(f'/duty/{duty_id}')
     assert response_2.status_code == 404
+
+def test_PATCH_duty_one_field(client):
+    patch_body = {
+        'name': 'D1-partial-update'
+    }    
+    duties = client.get('/duties')
+    duty_id = duties.get_json()[0]['id']
+    response = client.patch(f'/duty/{duty_id}', json=patch_body)
+    updated_duty = response.data.decode()
+    assert response.status_code == 200
+    assert 'D1-partial-update' in updated_duty
+    assert 'duty 1' in updated_duty
+
+def test_PATCH_duty_by_id(client):
+    patch_body = {
+        'name': 'D1-updated',
+        'description': 'duty 1 updated'
+    }    
+    duties = client.get('/duties')
+    duty_id = duties.get_json()[0]['id']
+    response = client.patch(f'/duty/{duty_id}', json=patch_body)
+    updated_duty = response.data.decode()
+    assert response.status_code == 200
+    assert 'D1-updated' in updated_duty
+    assert 'duty 1 updated' in updated_duty
+
+def test_PATCH_duty_no_fields(client):
+    patch_body = { }    
+    duties = client.get('/duties')
+    duty_id = duties.get_json()[0]['id']
+    response = client.patch(f'/duty/{duty_id}', json=patch_body)
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+
+def test_PATCH_duty_invalid_field(client):
+    patch_body = {
+        'invalid_field': 'some_value'
+    }    
+    duties = client.get('/duties')
+    duty_id = duties.get_json()[0]['id']
+    response = client.patch(f'/duty/{duty_id}', json=patch_body)
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+
+def test_PATCH_duty_invalid_id(client):
+    patch_body = {
+        'name': 'D1-updated'
+    }    
+    invalid_id = 9999
+    response = client.patch(f'/duty/{invalid_id}', json=patch_body)
+    assert response.status_code == 404
+    assert 'Resource not found' in response.text
