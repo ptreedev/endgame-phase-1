@@ -24,3 +24,13 @@ def test_POST_associate_coin_duty(client):
     assert association_response.get_json() == {
         'message': 'Association created successfully'
     }
+
+def test_POST_associate_coin_duty_invalid_ids(client):
+    association_response = client.post('/coin_duties', json={
+        'coin_id': 'non-existent-coin-id',
+        'duty_id': 'non-existent-duty-id'
+    })
+    assert association_response.status_code == 404
+    assert association_response.get_json() == {
+        'message': 'Resource not found'
+    }

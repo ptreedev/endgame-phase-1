@@ -140,6 +140,8 @@ def associate_coin_duty():
         CoinDuty.create(coin=coin, duty=duty)
         return {'message': 'Association created successfully'}, 201
     except (DoesNotExist, KeyError, IntegrityError):
+        if (DoesNotExist):
+            return {'message': 'Resource not found'}, 404
         return {'message': 'bad request'}, 400
     
 if __name__ == '__main__':
