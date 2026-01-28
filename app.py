@@ -129,19 +129,16 @@ def patch_duty_by_id(duty_id):
     updated_duty = model_to_dict(Duty.get_by_id(duty_id))
     return updated_duty, 200
 
-@app.post('/coin_duties')
-def associate_coin_duty():
+@app.patch('/coin/<coin_id>/duties')
+def associate_coin_duty(coin_id):
     try:
         body = request.get_json()
-        coin_id = body['coin_id']
         duty_id = body['duty_id']
         coin = Coin.get_by_id(coin_id)
         duty = Duty.get_by_id(duty_id)
         CoinDuty.create(coin=coin, duty=duty)
-        return {'message': 'Association created successfully'}, 201
+        return {'message': 'Association created successfully'}, 200
     except (DoesNotExist, KeyError, IntegrityError):
-        if (DoesNotExist):
-            return {'message': 'Resource not found'}, 404
         return {'message': 'bad request'}, 400
     
 if __name__ == '__main__':
