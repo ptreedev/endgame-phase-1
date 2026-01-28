@@ -140,7 +140,21 @@ def associate_coin_duty(coin_id):
         return {'message': 'Association created successfully'}, 200
     except (DoesNotExist, KeyError, IntegrityError):
         return {'message': 'bad request'}, 400
-    
+
+@app.get('/duty/<duty_id>/coins')
+def get_coins_by_duty_id(duty_id):
+        duty = Duty.get_by_id(duty_id)
+        coins = Coin.select().join(CoinDuty).where(CoinDuty.duty == duty)
+        formatted_coins = [model_to_dict(coin) for coin in coins]
+        response_object = {
+            'id': str(duty.id),
+            'name': duty.name,
+            'description': duty.description,
+            'coins': formatted_coins
+        }
+        return response_object
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 

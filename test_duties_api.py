@@ -119,3 +119,42 @@ def test_PATCH_duty_invalid_id(client):
     response = client.patch(f'/duty/{invalid_id}', json=patch_body)
     assert response.status_code == 404
     assert 'Resource not found' in response.text
+
+def test_GET_duty_returns_associated_coins(client):
+    new_duty = {
+        'name': 'D3',
+        'description': 'duty 3'
+    }
+    duty_response = client.post('/duties', json=new_duty)
+    duty_id = duty_response.get_json()['id']
+
+    new_coin = {
+        'name': 'houston',
+        'description': 'houstonary'
+    }
+    coin_response = client.post('/coins', json=new_coin)
+    coin_id = coin_response.get_json()['id']
+
+    association_body = {
+        'duty_id': duty_id
+    }
+    client.patch(f'/coin/{coin_id}/duties', json=association_body)
+    expected_response = {
+        'id': duty_id,
+        'name': 'D3',
+        'description': 'duty 3',
+        'coins': [{
+            'id': coin_id,
+            'name': 'houston',
+            'description': 'houstonary'
+        }]
+    }
+    response = client.get(f'/duty/{duty_id}/coins')
+    duty_data = response.get_json()
+    assert response.status_code == 200
+    for key, value in expected_response.items():
+        if key != 'coins':
+            assert key in duty_data.keys()
+            assert value in duty_data.values()
+        elif key == 'coins':
+            assert any(coin['id'] == coin_id for coin in duty_data['coins'])
