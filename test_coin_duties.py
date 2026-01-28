@@ -23,3 +23,21 @@ def test_PATCH_COIN_associate_coin_duty(client):
     assert association_response.get_json() == {
         'message': 'Association created successfully'
     }
+
+def test_PATCH_COIN_associate_coin_duty_missing_item(client):
+    new_coin = {
+        'name': 'secure',
+        'description': 'security'
+    }
+    coin_response = client.post('/coins', json=new_coin)
+    created_coin = coin_response.get_json()
+    coin_id = created_coin['id']
+
+    association_response = client.patch(f'/coin/{coin_id}/duties', json={
+       
+    })
+    assert association_response.status_code == 400
+    assert association_response.get_json() == {
+        'message': 'bad request'
+    }
+    
