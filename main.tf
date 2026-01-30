@@ -58,7 +58,12 @@ resource "aws_instance" "app_server" {
   vpc_security_group_ids = ["sg-0d951b9dddd0a3768"]
   key_name               = "terraform-key"
   user_data = templatefile("${path.module}/cloud-init.yaml.tmpl", {
-    instance_name = "tfstate"
+    instance_name = "pete-endgame-ec2"
+    DB_HOST = var.db_host
+    DB_USERNAME = var.db_username
+    DB_PASSWORD = var.db_password
+    DB_NAME = var.db_name
+    DB_PORT = var.db_port
   })
   tags = {
     Name = "pete-endgame-ec2"
