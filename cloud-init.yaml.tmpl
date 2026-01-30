@@ -32,6 +32,8 @@ runcmd:
 
   - git clone https://github.com/ptreedev/endgame-phase-1 /home/ubuntu/endgame-phase-1
 
+  - cd /home/ubuntu/endgame-phase-1 || true
+
   - |
     cat > /home/ubuntu/endgame-phase-1/.env << 'EOF'
     DB_HOST='${DB_HOST}'
