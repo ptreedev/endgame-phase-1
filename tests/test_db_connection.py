@@ -1,5 +1,5 @@
-from db import connect_to_db, database, PG_DB
-from app import app
+from app.db import connect_to_db, database, PG_DB
+from app.app import app
 
 def test_real_db_connection():
     connect_to_db(app, PG_DB)

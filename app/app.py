@@ -1,5 +1,5 @@
 from flask import Flask, request
-from db import Coin, CoinDuty, Duty, connect_to_db, PG_DB, database
+from app.db import Coin, CoinDuty, Duty, connect_to_db, PG_DB, database
 from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError, DoesNotExist
 

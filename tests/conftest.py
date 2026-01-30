@@ -1,6 +1,6 @@
 import pytest
-from db import *
-from app import app
+from app.db import *
+from app.app import app
 
 
 @pytest.fixture(autouse=True)
