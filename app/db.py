@@ -7,19 +7,14 @@ load_dotenv()
 
 database = DatabaseProxy()
 
-ENV = os.getenv("FLASK_ENV", "production").lower()
+TEST_DB = SqliteDatabase(":memory:")
 
-if ENV == "test":
-    TEST_DB = SqliteDatabase(":memory:")
-    database.initialize(TEST_DB)
-else:
-    PG_DB = PostgresqlDatabase(
+PG_DB = PostgresqlDatabase(
         os.getenv('DB_NAME'), 
         user=os.getenv('DB_USERNAME'), 
         host=os.getenv('DB_HOST'), 
         password=os.getenv('DB_PASSWORD'), 
         port=os.getenv('DB_PORT'))
-    database.initialize(PG_DB)
 
 def connect_to_db(app):
     try:
