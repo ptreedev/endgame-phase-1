@@ -14,7 +14,10 @@ PG_DB = PostgresqlDatabase(
         user=os.getenv('DB_USERNAME'), 
         host=os.getenv('DB_HOST'), 
         password=os.getenv('DB_PASSWORD'), 
-        port=os.getenv('DB_PORT'))
+        port=os.getenv('DB_PORT'),
+        sslmode='require'
+    )
+        
 
 ENV = os.getenv("FLASK_ENV", "production").lower()
 
@@ -24,6 +27,7 @@ def connect_to_db(app):
             database.initialize(TEST_DB)
         else:
             database.initialize(PG_DB)
+            print("Connecting to Postgres DB")
         database.connect(reuse_if_open=True)
     except OperationalError as e:
         app.logger.error(f'DB connection error: {e}')
