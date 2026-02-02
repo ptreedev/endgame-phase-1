@@ -14,7 +14,7 @@ PG_DB = PostgresqlDatabase(
         user=os.getenv('DB_USERNAME'), 
         host=os.getenv('DB_HOST'), 
         password=os.getenv('DB_PASSWORD'), 
-        port=os.getenv('DB_PORT'),
+        port=int(os.getenv('DB_PORT')),
         sslmode='require'
     )
         
