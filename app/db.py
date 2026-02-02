@@ -2,22 +2,27 @@ from dotenv import load_dotenv
 import os
 from peewee import *
 import uuid
+
 load_dotenv()
 
 database = DatabaseProxy()
 
-TEST_DB = SqliteDatabase(':memory:')
+ENV = os.getenv("FLASK_ENV", "production").lower()
 
-PG_DB = PostgresqlDatabase(
-    os.getenv('DB_NAME'), 
-    user=os.getenv('DB_USERNAME'), 
-    host=os.getenv('DB_HOST'), 
-    password=os.getenv('DB_PASSWORD'), 
-    port=os.getenv('DB_PORT'))
+if ENV == "test":
+    TEST_DB = SqliteDatabase(":memory:")
+    database.initialize(TEST_DB)
+else:
+    PG_DB = PostgresqlDatabase(
+        os.getenv('DB_NAME'), 
+        user=os.getenv('DB_USERNAME'), 
+        host=os.getenv('DB_HOST'), 
+        password=os.getenv('DB_PASSWORD'), 
+        port=os.getenv('DB_PORT'))
+    database.initialize(PG_DB)
 
-def connect_to_db(app, db):
+def connect_to_db(app):
     try:
-        database.initialize(db)
         database.connect(reuse_if_open=True)
     except OperationalError as e:
         app.logger.error(f'DB connection error: {e}')

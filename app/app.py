@@ -1,5 +1,5 @@
 from flask import Flask, request
-from app.db import Coin, CoinDuty, Duty, connect_to_db, PG_DB, database
+from app.db import Coin, CoinDuty, Duty, connect_to_db, database
 from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError, DoesNotExist
 
@@ -8,7 +8,7 @@ app = Flask(__name__)
 @app.before_request
 def _db_connect():
     if not app.testing:
-        connect_to_db(app, PG_DB)
+        connect_to_db(app)
 
 @app.teardown_request
 def _db_close(exc):
