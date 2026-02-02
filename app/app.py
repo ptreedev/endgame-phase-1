@@ -5,13 +5,6 @@ from peewee import IntegrityError, DoesNotExist
 
 app = Flask(__name__)
 
-ENV = os.getenv("FLASK_ENV", "production").lower()
-
-if ENV == "test":
-    database.initialize(TEST_DB)
-else:
-    database.initialize(PG_DB)
-
 @app.before_request
 def _db_connect():
     if not app.testing:
