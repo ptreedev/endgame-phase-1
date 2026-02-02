@@ -50,4 +50,4 @@ runcmd:
   - docker stop myapp || true
   - docker rm myapp || true
 
-  - docker run -d -p 8080:8080 --name myapp myapp:latest
+  - docker run -d -p 8080:8080 --env-file .env --name myapp myapp:latest
