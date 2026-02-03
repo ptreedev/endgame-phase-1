@@ -36,11 +36,11 @@ runcmd:
 
   - |
     cat > /home/ubuntu/endgame-phase-1/.env << 'EOF'
-    DB_HOST='${DB_HOST}'
-    DB_USERNAME='${DB_USERNAME}'
-    DB_PASSWORD='${DB_PASSWORD}'
-    DB_NAME='${DB_NAME}'
-    DB_PORT='${DB_PORT}'
+    DB_HOST=${DB_HOST}
+    DB_USERNAME=${DB_USERNAME}
+    DB_PASSWORD=${DB_PASSWORD}
+    DB_NAME=${DB_NAME}
+    DB_PORT=${DB_PORT}
     EOF
   - chmod 600 /home/ubuntu/endgame-phase-1/.env
   - chown ubuntu:ubuntu /home/ubuntu/endgame-phase-1/.env
