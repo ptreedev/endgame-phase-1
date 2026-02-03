@@ -83,7 +83,7 @@ def get_duty_by_id(duty_id):
         duty = Duty.get_by_id(duty_id)
         format_duty = model_to_dict(duty)
         return format_duty
-    except DoesNotExist:
+    except (DoesNotExist, DataError): 
         return {'message': 'Resource not found'}, 404
 
 @app.post('/duties')
@@ -119,9 +119,11 @@ def patch_duty_by_id(duty_id):
     }
     if not update_data:
         return {'message': 'bad request'}, 400
-    
-    query = Duty.update(update_data).where(Duty.id == duty_id)
-    rows_updated = query.execute()
+    try: 
+        query = Duty.update(update_data).where(Duty.id == duty_id)
+        rows_updated = query.execute()
+    except DataError:
+        return {'message': 'Resource not found'}, 404
 
     if rows_updated == 0:
         return {'message': 'Resource not found'}, 404
