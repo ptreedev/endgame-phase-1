@@ -35,7 +35,7 @@ jobs:
         run: terraform init
 
       - name: Terraform Format
-        run: terraform fmt 
+        run: terraform fmt -check -recursive
 
       - name: Terraform Plan
         env: 

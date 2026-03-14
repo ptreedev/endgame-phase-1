@@ -1,0 +1,93 @@
+name: Deploy Application
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'requirements.txt'
+      - '.github/workflows/application.yml'
+
+  # When infrastructure.yml runs on the same commit, wait for it to finish
+  # before deploying the app. This handles the case where both infra and app
+  # code change in the same push.
+  workflow_run:
+    workflows: ["Deploy to EC2 Instance"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy-app:
+    runs-on: ubuntu-latest
+
+    # When triggered by a push:        always run
+    # When triggered by workflow_run:  only run if infrastructure succeeded
+    if: >
+      github.event_name == 'push' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      # Load the SSH private key into the agent — cleanup is handled
+      # automatically by the action even if the job fails
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Register the EC2 host key so we can verify the server identity
+      # (avoids StrictHostKeyChecking=no and MITM risk)
+      - name: Add EC2 host key to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_HOST_KEY }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      # Write the .env file with no leading whitespace
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          EOF
+
+      # Copy .env to the EC2 server
+      - name: Copy .env to EC2
+        run: |
+          scp .env ubuntu@${{ secrets.EC2_IP }}:/home/ubuntu/endgame-phase-1/.env
+
+      # SSH in, pull latest code, and restart Docker
+      - name: Deploy on EC2
+        run: |
+          ssh ubuntu@${{ secrets.EC2_IP }} << 'EOF'
+            set -e
+            cd /home/ubuntu/endgame-phase-1
+
+            echo "--- Pulling latest code ---"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "--- Rebuilding containers ---"
+            docker compose pull
+            docker compose up -d --build
+
+            echo "--- Health check ---"
+            sleep 5
+            docker compose ps | grep -q "Up" || { echo "ERROR: containers not running"; exit 1; }
+
+            echo "--- Deploy complete ---"
+          EOF
+
+      # Clean up the local .env from the runner
+      # if: always() ensures this runs even if earlier steps fail
+      # The SSH key is cleaned up automatically by the ssh-agent action
+      - name: Clean up local .env
+        if: always()
+        run: rm -f .env
