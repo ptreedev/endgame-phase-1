@@ -1,3 +1,8 @@
+variable "ssh_public_key" {
+  description = "Public SSH key to register with AWS for EC2 access. Generate with ssh-keygen and store the private key in GitHub Secrets as SSH_PRIVATE_KEY."
+  type        = string
+}
+
 variable "db_host" {
   type      = string
   sensitive = true

@@ -28,28 +28,11 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
 }
 
-# Generate the SSH Key
-resource "tls_private_key" "ssh_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-# Save the private key locally
-resource "local_file" "private_key" {
-  content  = tls_private_key.ssh_key.private_key_pem
-  filename = "./.ssh/terraform_rsa"
-}
-
-# Save the public key locally
-resource "local_file" "public_key" {
-  content  = tls_private_key.ssh_key.public_key_openssh
-  filename = "./.ssh/terraform_rsa.pub"
-}
-
-# Register the public key with AWS so the EC2 instance can use it
+# Register the public key with AWS — the private key never touches Terraform
+# or the runner. It is stored in the GitHub repository secrets and used by the runner to connect to the EC2 instance.
 resource "aws_key_pair" "deployer" {
   key_name   = "terraform-key"
-  public_key = tls_private_key.ssh_key.public_key_openssh
+  public_key = var.ssh_public_key
 }
 
 # The EC2 Server
@@ -57,7 +40,6 @@ resource "aws_instance" "app_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.micro"
 
-  # Connect the EC2 to the custom VPC, Subnet, and Security Group
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   key_name               = aws_key_pair.deployer.key_name
@@ -74,6 +56,7 @@ resource "aws_instance" "app_server" {
   tags = {
     Name = "pete-endgame-ec2"
   }
+
   lifecycle {
     ignore_changes = [
       ami,

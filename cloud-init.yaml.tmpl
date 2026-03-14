@@ -24,14 +24,22 @@ write_files:
       }
 
 runcmd:
+  # Nginx setup
   - ln -s /etc/nginx/sites-available/my-site.conf /etc/nginx/sites-enabled/
   - rm /etc/nginx/sites-enabled/default
   - systemctl restart nginx
 
+  # Docker setup
   - systemctl start docker
   - systemctl enable docker
+  - usermod -aG docker ubuntu
 
-  - git clone https://github.com/ptreedev/endgame-phase-1 /home/ubuntu/endgame-phase-1
+  # Clone the repo as the ubuntu user so ownership is correct from the start
+  # This avoids the "dubious ownership" git error in the deploy pipeline
+  - sudo -u ubuntu git clone https://github.com/ptreedev/endgame-phase-1 /home/ubuntu/endgame-phase-1
+
+  # Ensure the entire directory is owned by ubuntu, not root
+  - chown -R ubuntu:ubuntu /home/ubuntu/endgame-phase-1
 
   - |
     cat > /home/ubuntu/endgame-phase-1/.env << 'EOF'
