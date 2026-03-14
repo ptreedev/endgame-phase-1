@@ -4,6 +4,7 @@ packages:
   - nginx
   - git
   - docker.io
+  - docker-compose-v2
 
 write_files:
   - path: /etc/nginx/sites-available/my-site.conf
@@ -32,8 +33,6 @@ runcmd:
 
   - git clone https://github.com/ptreedev/endgame-phase-1 /home/ubuntu/endgame-phase-1
 
-  - cd /home/ubuntu/endgame-phase-1 || true
-
   - |
     cat > /home/ubuntu/endgame-phase-1/.env << 'EOF'
     DB_HOST=${DB_HOST}
@@ -45,9 +44,6 @@ runcmd:
   - chmod 600 /home/ubuntu/endgame-phase-1/.env
   - chown ubuntu:ubuntu /home/ubuntu/endgame-phase-1/.env
 
-  - docker build -t myapp:latest /home/ubuntu/endgame-phase-1
+  - cd /home/ubuntu/endgame-phase-1 && docker compose up -d --build
 
-  - docker stop myapp || true
-  - docker rm myapp || true
-
-  - docker run -d -p 8080:8080 --env-file .env --name myapp myapp:latest
+ 
