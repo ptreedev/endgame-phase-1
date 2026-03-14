@@ -1,5 +1,22 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "6.5.0"
+    }
+  }
+  required_version = ">= 1.2"
+
+  backend "s3" {
+    bucket = "pete-l-endgame-tf-state-1010"
+    key    = "pl-endgame/terraform.tfstate"
+    region = "eu-west-2"
+    dynamodb_table = "pete-l-endgame-terraform-lock"
+  }
+}
+
 provider "aws" {
-  region = "eu-north-1"
+  region = "eu-west-2"
 }
 
 data "aws_ami" "ubuntu" {
@@ -11,60 +28,49 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
 }
 
-variable "db_host" {
-  type      = string
-  sensitive = true
-}
-
-variable "db_username" {
-  type      = string
-  sensitive = true
-}
-
-variable "db_password" {
-  type      = string
-  sensitive = true
-}
-
-variable "db_name" {
-  type      = string
-  sensitive = true
-}
-
-variable "db_port" {
-  type      = string
-  sensitive = true
-}
-
+# Generate the SSH Key
 resource "tls_private_key" "ssh_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
+# Save the private key locally
 resource "local_file" "private_key" {
   content  = tls_private_key.ssh_key.private_key_pem
   filename = "./.ssh/terraform_rsa"
 }
 
+# Save the public key locally
 resource "local_file" "public_key" {
   content  = tls_private_key.ssh_key.public_key_openssh
   filename = "./.ssh/terraform_rsa.pub"
 }
 
+# Register the public key with AWS so the EC2 instance can use it
+resource "aws_key_pair" "deployer" {
+  key_name   = "terraform-key"
+  public_key = tls_private_key.ssh_key.public_key_openssh
+}
+
+# The EC2 Server
 resource "aws_instance" "app_server" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = "t3.micro"
-  subnet_id              = "subnet-ba3fc8d3"
-  vpc_security_group_ids = ["sg-0c51f8ec9ca1161cc"]
-  key_name               = "terraform-key"
+  
+  # Connect the EC2 to your custom VPC Network & Security Group
+  subnet_id              = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
+  key_name               = aws_key_pair.deployer.key_name
+  
   user_data = templatefile("${path.module}/cloud-init.yaml.tmpl", {
     instance_name = "pete-endgame-ec2"
-    DB_HOST = var.db_host
-    DB_USERNAME = var.db_username
-    DB_PASSWORD = var.db_password
-    DB_NAME = var.db_name
-    DB_PORT = var.db_port
+    DB_HOST       = var.db_host
+    DB_USERNAME   = var.db_username
+    DB_PASSWORD   = var.db_password
+    DB_NAME       = var.db_name
+    DB_PORT       = var.db_port
   })
+
   tags = {
     Name = "pete-endgame-ec2"
   }
