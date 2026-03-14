@@ -57,7 +57,7 @@ resource "aws_instance" "app_server" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = "t3.micro"
   
-  # Connect the EC2 to your custom VPC Network & Security Group
+  # Connect the EC2 to the custom VPC, Subnet, and Security Group
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   key_name               = aws_key_pair.deployer.key_name
@@ -73,5 +73,21 @@ resource "aws_instance" "app_server" {
 
   tags = {
     Name = "pete-endgame-ec2"
+  }
+  lifecycle {
+    ignore_changes = [
+      ami,
+      user_data
+    ]
+  }
+}
+
+# Allocate a static Elastic IP and attach it to the EC2 instance
+resource "aws_eip" "app_eip" {
+  instance = aws_instance.app_server.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "endgame-static-ip"
   }
 }
