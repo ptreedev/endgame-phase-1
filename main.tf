@@ -8,9 +8,9 @@ terraform {
   required_version = ">= 1.2"
 
   backend "s3" {
-    bucket = "pete-l-endgame-tf-state-1010"
-    key    = "pl-endgame/terraform.tfstate"
-    region = "eu-west-2"
+    bucket         = "pete-l-endgame-tf-state-1010"
+    key            = "pl-endgame/terraform.tfstate"
+    region         = "eu-west-2"
     dynamodb_table = "pete-l-endgame-terraform-lock"
   }
 }
@@ -54,14 +54,14 @@ resource "aws_key_pair" "deployer" {
 
 # The EC2 Server
 resource "aws_instance" "app_server" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t3.micro"
-  
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t3.micro"
+
   # Connect the EC2 to the custom VPC, Subnet, and Security Group
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   key_name               = aws_key_pair.deployer.key_name
-  
+
   user_data = templatefile("${path.module}/cloud-init.yaml.tmpl", {
     instance_name = "pete-endgame-ec2"
     DB_HOST       = var.db_host
