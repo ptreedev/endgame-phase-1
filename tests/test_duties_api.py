@@ -60,6 +60,15 @@ def test_POST_duty_missing_field(client):
     assert response.status_code == 400
     assert 'bad request' in response.text
 
+def test_POST_duty_invalid_name_length(client):
+    invalid_duty = {
+        'name': 'D1234567890',
+        'description': 'duty 1'
+    }
+    response = client.post('/duties', json=invalid_duty)
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+
 def test_DELETE_duty_by_id(client):
     duties = client.get('/duties')
     duty_id = duties.get_json()[0]['id']
@@ -70,19 +79,19 @@ def test_DELETE_duty_by_id(client):
 
 def test_PATCH_duty_one_field(client):
     patch_body = {
-        'name': 'D1-partial-update'
+        'name': 'D5'
     }    
     duties = client.get('/duties')
     duty_id = duties.get_json()[0]['id']
     response = client.patch(f'/duty/{duty_id}', json=patch_body)
     updated_duty = response.data.decode()
     assert response.status_code == 200
-    assert 'D1-partial-update' in updated_duty
+    assert 'D5' in updated_duty
     assert 'duty 1' in updated_duty
 
 def test_PATCH_duty_by_id(client):
     patch_body = {
-        'name': 'D1-updated',
+        'name': 'D1',
         'description': 'duty 1 updated'
     }    
     duties = client.get('/duties')
@@ -90,7 +99,7 @@ def test_PATCH_duty_by_id(client):
     response = client.patch(f'/duty/{duty_id}', json=patch_body)
     updated_duty = response.data.decode()
     assert response.status_code == 200
-    assert 'D1-updated' in updated_duty
+    assert 'D1' in updated_duty
     assert 'duty 1 updated' in updated_duty
 
 def test_PATCH_duty_no_fields(client):
