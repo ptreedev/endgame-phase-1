@@ -54,7 +54,7 @@ def patch_coin_by_id(coin_id):
     if not body:
         return {'message': 'bad request'}, 400
 
-    allowed_fields = {'name', 'description'}
+    allowed_fields = {'name', 'description', 'complete'}
     update_data = {
         getattr(Coin, key): value
         for key, value in body.items()

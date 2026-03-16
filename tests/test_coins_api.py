@@ -133,3 +133,15 @@ def test_PATCH_coin_invalid_id(client):
     invalid_id = 9999
     response = client.patch(f'/coin/{invalid_id}', json = patch_body)
     assert response.status_code == 404
+
+def test_PATCH_coin_update_complete(client):
+    patch_body = {
+        'complete': 'true'
+    }    
+    coins = client.get('/coins')
+    coin_id = coins.get_json()[0]['id']
+    response = client.patch(f'/coin/{coin_id}', json = patch_body)
+    assert response.status_code == 200
+    assert 'true' in response.text
+    assert 'automate' in response.text
+    assert 'automation' in response.text
