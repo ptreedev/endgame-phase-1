@@ -43,6 +43,7 @@ class Coin(BaseModel):
     id = UUIDField(primary_key=True, default=uuid.uuid4)
     name = CharField(35, unique = True)
     description = CharField(255)
+    complete = BooleanField(default=False)
     class Meta:
         table_name='coins'
 

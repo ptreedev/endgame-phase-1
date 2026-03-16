@@ -3,6 +3,7 @@ def test_GET_all_coins(client):
     assert response.status_code == 200
     assert 'automate' in response.text
     assert 'automation' in response.text
+    assert 'false' in response.text
 
 def test_GET_coin_by_id(client):
     coins = client.get('/coins')
@@ -49,6 +50,19 @@ def test_POST_coin_missing_field(client):
     response = client.post('/coins', json = incomplete_coin)
     assert response.status_code == 400
     assert 'bad request' in response.text
+
+# def test_POST_coin_sanitized_input(client):
+#     unsanitized_coin = {
+#         'name': '<script>alert("xss")</script>',
+#         'description': '<img src="x" onerror="alert(\'xss\')">'
+#     }
+#     response = client.post('/coins', json = unsanitized_coin)
+#     created_coin = response.data.decode()
+#     assert response.status_code == 201
+#     assert '<script>' not in created_coin
+#     assert '<img' not in created_coin
+#     assert 'alert("xss")' not in created_coin
+#     assert 'onerror="alert(\'xss\')"' not in created_coin
 
 def test_DELETE_coin_by_id(client):
     coins = client.get('/coins')
