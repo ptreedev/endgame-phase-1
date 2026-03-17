@@ -27,3 +27,8 @@ variable "db_port" {
   type      = string
   sensitive = true
 }
+
+variable "cors_origin" {
+  description = "The allowed CORS origin for the web application"
+  type        = string
+}

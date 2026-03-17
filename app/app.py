@@ -1,9 +1,11 @@
 from flask import Flask, request
+from flask_cors import CORS
 from app.db import *
 from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError, DoesNotExist
 
 app = Flask(__name__)
+CORS(app, origins=[os.getenv('CORS_ORIGIN')])
 
 @app.before_request
 def _db_connect():

@@ -51,6 +51,7 @@ resource "aws_instance" "app_server" {
     DB_PASSWORD   = var.db_password
     DB_NAME       = var.db_name
     DB_PORT       = var.db_port
+    CORS_ORIGIN   = var.cors_origin
   })
 
   tags = {
