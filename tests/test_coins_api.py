@@ -1,9 +1,44 @@
+from tests.conftest import client
+
+
 def test_GET_all_coins(client):
     response = client.get('/coins')
     assert response.status_code == 200
     assert 'automate' in response.text
     assert 'automation' in response.text
     assert 'false' in response.text
+
+def test_GET_all_coins_gets_associated_duties(client):
+    new_duty = {
+        'name': 'D3',
+        'description': 'duty 3'
+    }
+    duty_response = client.post('/duties', json=new_duty)
+    duty_id = duty_response.get_json()['id']
+
+    new_coin = {
+        'name': 'houston',
+        'description': 'houstonary'
+    }
+    coin_response = client.post('/coins', json=new_coin)
+    coin_id = coin_response.get_json()['id']
+
+    client.patch(f'/coin/{coin_id}/duties', json={'duty_id': duty_id})
+
+    response = client.get('/coins')
+    assert response.status_code == 200
+
+    coin_data = response.get_json()
+    coin = next((c for c in coin_data if c['id'] == coin_id), None)
+
+    assert coin is not None
+    assert coin['name'] == 'houston'
+    assert coin['description'] == 'houstonary'
+    assert 'duties' in coin
+    assert any(duty['id'] == duty_id for duty in coin['duties'])
+
+    assert 'automate' in response.text
+    assert 'automation' in response.text
 
 def test_GET_coin_by_id(client):
     coins = client.get('/coins')
