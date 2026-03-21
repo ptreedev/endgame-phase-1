@@ -17,16 +17,13 @@ PG_DB = PostgresqlDatabase(
         port=os.getenv('DB_PORT'),
         sslmode='require'
     )
-        
 
-ENV = os.getenv("FLASK_ENV", "production").lower()
-
-if ENV == "test":
-    database.initialize(TEST_DB)
-else:
-    database.initialize(PG_DB)
 
 def connect_to_db(app):
+    env = os.getenv("FLASK_ENV", "production").lower()
+    db = TEST_DB if env == "test" else PG_DB
+    database.initialize(db)
+
     try:
         database.connect(reuse_if_open=True)
     except OperationalError as e:
