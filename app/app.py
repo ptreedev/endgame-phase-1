@@ -93,8 +93,15 @@ def get_all_duties():
 def get_duty_by_id(duty_id):
     try:
         duty = Duty.get_by_id(duty_id)
-        format_duty = model_to_dict(duty)
-        return format_duty
+        coins = Coin.select().join(CoinDuty).where(CoinDuty.duty == duty)
+        formatted_coins = [model_to_dict(coin) for coin in coins]
+        response_object = {
+            'id': str(duty.id),
+            'name': duty.name,
+            'description': duty.description,
+            'coins': formatted_coins
+        }
+        return response_object
     except (DoesNotExist, DataError): 
         return {'message': 'Resource not found'}, 404
 
@@ -176,7 +183,6 @@ def get_duty_by_name(duty_name):
         return format_duty
     except DoesNotExist:
         return {'message': 'Resource not found'}, 404
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080)
