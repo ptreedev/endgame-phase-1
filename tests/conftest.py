@@ -12,7 +12,7 @@ def setup_test_db():
     
     yield
 
-    database.drop_tables([Coin, Duty, CoinDuty])
+    database.drop_tables([Coin, Duty, CoinDuty, RequestLog])
     database.close()
 
 @pytest.fixture(scope='function')
