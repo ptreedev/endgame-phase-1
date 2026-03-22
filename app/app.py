@@ -2,22 +2,21 @@ from datetime import datetime
 from flask import Flask, request, g
 from flask_cors import CORS
 from app.db import *
+from app.limiter import limiter
 from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError, DoesNotExist
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from app.routes.logs import logs_bp
+from app.routes.coins import coins_bp
+from app.routes.duties import duties_bp
 import os
 
 app = Flask(__name__)
-limiter = Limiter(
-    get_remote_address,
-    app = app,
-    default_limits=["200 per hour"]
-)
+limiter.init_app(app)
 CORS(app, origins=[os.getenv('CORS_ORIGIN'), os.getenv('DEV_CORS_ORIGIN')])
 
 app.register_blueprint(logs_bp)
+app.register_blueprint(coins_bp)
+app.register_blueprint(duties_bp)
 
 @app.before_request
 def _db_connect():
@@ -28,175 +27,6 @@ def _db_connect():
 def _db_close(exc):
     if not app.testing and not database.is_closed():
         database.close()
-
-@app.get('/coins')
-def get_all_coins():
-    coins = Coin.select()
-    result = []
-    for coin in coins:
-        coin_dict = model_to_dict(coin)
-        duties = (
-            Duty.select()
-            .join(CoinDuty)
-            .where(CoinDuty.coin == coin)
-        )
-        coin_dict['duties'] = [model_to_dict(duty) for duty in duties]
-        result.append(coin_dict)
-    return result
-
-@app.get('/coin/<coin_id>')
-def get_coin_by_id(coin_id):
-    try:
-        coin = Coin.get_by_id(coin_id)
-        format_coin = model_to_dict(coin)
-        return format_coin
-    except DoesNotExist:
-        return {'message': 'Resource not found'}, 404
-    
-@app.post('/coins')
-@limiter.limit("10 per minute")
-def create_coin():
-    try: 
-        body = request.get_json()
-        created_coin = Coin.create(name = body['name'], description = body['description'])
-        return model_to_dict(created_coin), 201
-    except (IntegrityError, KeyError):
-        error = {'error': 'bad request',
-                'message': 'bad or missing fields'}
-        return error, 400
-    
-@app.delete('/coin/<coin_id>')
-def delete_coin_by_id(coin_id):
-    delete_query = Coin.delete_by_id(coin_id)
-    if(delete_query == 0):
-        return {'message': 'resource not found'}, 404
-    return '', 204
-
-@app.patch('/coin/<coin_id>')
-def patch_coin_by_id(coin_id):
-    body = request.get_json()
-
-    if not body:
-        return {'message': 'bad request'}, 400
-
-    allowed_fields = {'name', 'description', 'complete'}
-    update_data = {
-        getattr(Coin, key): value
-        for key, value in body.items()
-        if key in allowed_fields
-    }
-    if not update_data:
-        return {'message': 'bad request'}, 400
-    
-    query = Coin.update(update_data).where(Coin.id == coin_id)
-    rows_updated = query.execute()
-
-    if rows_updated == 0:
-        return {'message': 'Coin not found'}, 404
-    
-    updated_coin = model_to_dict(Coin.get_by_id(coin_id))
-    return updated_coin, 200
-
-@app.get('/duties')
-def get_all_duties():
-    formatted_query = [duty for duty in Duty.select().dicts()]
-    return formatted_query
-
-@app.get('/duty/<duty_id>')
-def get_duty_by_id(duty_id):
-    try:
-        duty = Duty.get_by_id(duty_id)
-        coins = Coin.select().join(CoinDuty).where(CoinDuty.duty == duty)
-        formatted_coins = [model_to_dict(coin) for coin in coins]
-        response_object = {
-            'id': str(duty.id),
-            'name': duty.name,
-            'description': duty.description,
-            'coins': formatted_coins
-        }
-        return response_object
-    except (DoesNotExist, DataError): 
-        return {'message': 'Resource not found'}, 404
-
-@app.post('/duties')
-@limiter.limit("10 per minute")
-def create_duty():
-    try: 
-        body = request.get_json()
-        created_duty = Duty.create(name = body['name'], description = body['description'])
-        return model_to_dict(created_duty), 201
-    except (IntegrityError, KeyError, DataError):
-        error = {'error': 'bad request',
-                'message': 'bad or missing fields'}
-        return error, 400
-
-@app.delete('/duty/<duty_id>')
-def delete_duty_by_id(duty_id):
-    delete_query = Duty.delete_by_id(duty_id)
-    if(delete_query == 0):
-        return {'message': 'resource not found'}, 404
-    return '', 204
-
-@app.patch('/duty/<duty_id>')
-def patch_duty_by_id(duty_id):
-    body = request.get_json()
-
-    if not body:
-        return {'message': 'bad request'}, 400
-
-    allowed_fields = {'name', 'description'}
-    update_data = {
-        getattr(Duty, key): value
-        for key, value in body.items()
-        if key in allowed_fields
-    }
-    if not update_data:
-        return {'message': 'bad request'}, 400
-    try: 
-        query = Duty.update(update_data).where(Duty.id == duty_id)
-        rows_updated = query.execute()
-    except DataError:
-        return {'message': 'Resource not found'}, 404
-
-    if rows_updated == 0:
-        return {'message': 'Resource not found'}, 404
-    
-    updated_duty = model_to_dict(Duty.get_by_id(duty_id))
-    return updated_duty, 200
-
-@app.patch('/coin/<coin_id>/duties')
-def associate_coin_duty(coin_id):
-    try:
-        body = request.get_json()
-        duty_id = body['duty_id']
-        coin = Coin.get_by_id(coin_id)
-        duty = Duty.get_by_id(duty_id)
-        CoinDuty.create(coin=coin, duty=duty)
-        return {'message': 'Association created successfully'}, 200
-    except (DoesNotExist, KeyError, IntegrityError):
-        return {'message': 'bad request'}, 400
-
-@app.get('/duty/<duty_id>/coins')
-def get_coins_by_duty_id(duty_id):
-        duty = Duty.get_by_id(duty_id)
-        coins = Coin.select().join(CoinDuty).where(CoinDuty.duty == duty)
-        formatted_coins = [model_to_dict(coin) for coin in coins]
-        response_object = {
-            'id': str(duty.id),
-            'name': duty.name,
-            'description': duty.description,
-            'coins': formatted_coins
-        }
-        return response_object
-
-@app.get('/v2/duty/<duty_name>')
-def get_duty_by_name(duty_name):
-    try:    
-        duty = Duty.get(Duty.name == duty_name)
-        format_duty = model_to_dict(duty)
-        return format_duty
-    except DoesNotExist:
-        return {'message': 'Resource not found'}, 404
 
 @app.before_request
 def log_request():
