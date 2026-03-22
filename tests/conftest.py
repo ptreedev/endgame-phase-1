@@ -3,7 +3,7 @@ from app.db import *
 from app.app import app
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def setup_test_db():
     connect_to_db(app)
     database.create_tables([Coin, Duty, CoinDuty])
