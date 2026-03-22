@@ -6,6 +6,7 @@ from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError, DoesNotExist
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from app.routes.logs import logs_bp
 import os
 
 app = Flask(__name__)
@@ -15,6 +16,8 @@ limiter = Limiter(
     default_limits=["200 per hour"]
 )
 CORS(app, origins=[os.getenv('CORS_ORIGIN'), os.getenv('DEV_CORS_ORIGIN')])
+
+app.register_blueprint(logs_bp)
 
 @app.before_request
 def _db_connect():
@@ -209,12 +212,6 @@ def log_response(response):
             status_code=response.status_code
         )
     return response
-
-
-@app.get('/requests')
-def get_requests():
-    logs = RequestLog.select().order_by(RequestLog.timestamp.desc()).limit(100)
-    return [model_to_dict(log) for log in logs]
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080)
