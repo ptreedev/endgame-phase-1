@@ -167,3 +167,16 @@ def test_GET_duty_returns_associated_coins(client):
             assert value in duty_data.values()
         elif key == 'coins':
             assert any(coin['id'] == coin_id for coin in duty_data['coins'])
+
+def test_v2_GET_duty_by_name(client):
+    duty_name = 'D1'
+    response = client.get(f'/v2/duty/{duty_name}')
+    duties = client.get('/duties')
+    duty_id = duties.get_json()[0]['id']
+    expected_id = f'{duty_id}'
+    expected_name = 'D1'
+    expected_desc = 'duty 1'
+    assert response.status_code == 200
+    assert expected_id in response.text
+    assert expected_name in response.text
+    assert expected_desc in response.text
