@@ -51,6 +51,7 @@ def get_coin_by_id(coin_id):
         return {'message': 'Resource not found'}, 404
     
 @app.post('/coins')
+@limiter.limit("10 per minute")
 def create_coin():
     try: 
         body = request.get_json()
@@ -115,6 +116,7 @@ def get_duty_by_id(duty_id):
         return {'message': 'Resource not found'}, 404
 
 @app.post('/duties')
+@limiter.limit("10 per minute")
 def create_duty():
     try: 
         body = request.get_json()
