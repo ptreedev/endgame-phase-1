@@ -170,9 +170,12 @@ def get_coins_by_duty_id(duty_id):
 
 @app.get('/v2/duty/<duty_name>')
 def get_duty_by_name(duty_name):
+    try:    
         duty = Duty.get(Duty.name == duty_name)
         format_duty = model_to_dict(duty)
         return format_duty
+    except DoesNotExist:
+        return {'message': 'Resource not found'}, 404
 
 
 if __name__ == '__main__':

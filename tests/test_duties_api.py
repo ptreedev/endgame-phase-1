@@ -180,3 +180,9 @@ def test_v2_GET_duty_by_name(client):
     assert expected_id in response.text
     assert expected_name in response.text
     assert expected_desc in response.text
+
+def test_v2_GET_duty_by_invalid_name(client):
+    invalid_name = 'InvalidDutyName'
+    response = client.get(f'/v2/duty/{invalid_name}')
+    assert response.status_code == 404
+    assert 'Resource not found' in response.text
