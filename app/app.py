@@ -1,4 +1,5 @@
-from flask import Flask, request
+from datetime import datetime
+from flask import Flask, request, g
 from flask_cors import CORS
 from app.db import *
 from playhouse.shortcuts import model_to_dict
@@ -183,6 +184,27 @@ def get_duty_by_name(duty_name):
         return format_duty
     except DoesNotExist:
         return {'message': 'Resource not found'}, 404
+
+@app.before_request
+def log_request():
+    g.start_time = datetime.now()
+
+@app.after_request
+def log_response(response):
+    if request.path != '/requests':
+        RequestLog.create(
+            method=request.method,
+            path=request.path,
+            timestamp=g.start_time,
+            status_code=response.status_code
+        )
+    return response
+
+
+@app.get('/requests')
+def get_requests():
+    logs = RequestLog.select().order_by(RequestLog.timestamp.desc()).limit(100)
+    return [model_to_dict(log) for log in logs]
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080)
