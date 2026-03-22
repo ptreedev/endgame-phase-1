@@ -6,7 +6,7 @@ from app.app import app
 @pytest.fixture()
 def setup_test_db():
     connect_to_db(app)
-    database.create_tables([Coin, Duty, CoinDuty])
+    database.create_tables([Coin, Duty, CoinDuty, RequestLog])
     Coin.create(name='automate', description='automation')
     Duty.create(name='D1', description='duty 1')
     

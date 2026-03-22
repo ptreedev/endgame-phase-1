@@ -57,3 +57,11 @@ class CoinDuty(BaseModel):
     class Meta:
         table_name='coin_duties'
         primary_key = CompositeKey('coin', 'duty')
+
+class RequestLog(BaseModel):
+    method = CharField()
+    path = CharField()
+    timestamp = DateTimeField()
+    status_code = IntegerField()
+    class Meta:
+        table_name='request_logs'
