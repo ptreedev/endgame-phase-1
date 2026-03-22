@@ -10,9 +10,9 @@ import os
 
 app = Flask(__name__)
 limiter = Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=["150 per hour"]
+    get_remote_address,
+    app = app,
+    default_limits=["200 per hour"]
 )
 CORS(app, origins=[os.getenv('CORS_ORIGIN'), os.getenv('DEV_CORS_ORIGIN')])
 
