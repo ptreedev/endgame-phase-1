@@ -4,8 +4,16 @@ from flask_cors import CORS
 from app.db import *
 from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError, DoesNotExist
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import os
 
 app = Flask(__name__)
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["150 per hour"]
+)
 CORS(app, origins=[os.getenv('CORS_ORIGIN'), os.getenv('DEV_CORS_ORIGIN')])
 
 @app.before_request
