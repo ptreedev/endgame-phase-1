@@ -5,7 +5,7 @@ from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError, DoesNotExist
 
 app = Flask(__name__)
-CORS(app, origins=[os.getenv('CORS_ORIGIN')])
+CORS(app, origins=[os.getenv('CORS_ORIGIN'), os.getenv('DEV_CORS_ORIGIN')])
 
 @app.before_request
 def _db_connect():
@@ -19,8 +19,18 @@ def _db_close(exc):
 
 @app.get('/coins')
 def get_all_coins():
-    formatted_query = [coin for coin in Coin.select().dicts()]
-    return formatted_query
+    coins = Coin.select()
+    result = []
+    for coin in coins:
+        coin_dict = model_to_dict(coin)
+        duties = (
+            Duty.select()
+            .join(CoinDuty)
+            .where(CoinDuty.coin == coin)
+        )
+        coin_dict['duties'] = [model_to_dict(duty) for duty in duties]
+        result.append(coin_dict)
+    return result
 
 @app.get('/coin/<coin_id>')
 def get_coin_by_id(coin_id):
@@ -157,6 +167,12 @@ def get_coins_by_duty_id(duty_id):
             'coins': formatted_coins
         }
         return response_object
+
+@app.get('/v2/duty/<duty_name>')
+def get_duty_by_name(duty_name):
+        duty = Duty.get(Duty.name == duty_name)
+        format_duty = model_to_dict(duty)
+        return format_duty
 
 
 if __name__ == '__main__':
