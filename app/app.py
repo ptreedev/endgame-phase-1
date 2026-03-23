@@ -8,6 +8,7 @@ from peewee import IntegrityError, DoesNotExist
 from app.routes.logs import logs_bp
 from app.routes.coins import coins_bp
 from app.routes.duties import duties_bp
+from app.routes.auth import users_bp
 import os
 
 app = Flask(__name__)
@@ -17,6 +18,7 @@ CORS(app, origins=[os.getenv('CORS_ORIGIN'), os.getenv('DEV_CORS_ORIGIN')])
 app.register_blueprint(logs_bp)
 app.register_blueprint(coins_bp)
 app.register_blueprint(duties_bp)
+app.register_blueprint(users_bp)
 
 @app.before_request
 def _db_connect():

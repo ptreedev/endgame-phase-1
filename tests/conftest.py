@@ -6,13 +6,13 @@ from app.app import app
 @pytest.fixture()
 def setup_test_db():
     connect_to_db(app)
-    database.create_tables([Coin, Duty, CoinDuty, RequestLog])
+    database.create_tables([Coin, Duty, CoinDuty, RequestLog, User])
     Coin.create(name='automate', description='automation')
     Duty.create(name='D1', description='duty 1')
     
     yield
 
-    database.drop_tables([Coin, Duty, CoinDuty, RequestLog])
+    database.drop_tables([Coin, Duty, CoinDuty, RequestLog, User])
     database.close()
 
 @pytest.fixture(scope='function')
