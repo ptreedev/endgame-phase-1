@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 import os
 from peewee import *
 import uuid
+import bcrypt
 
 load_dotenv()
 
@@ -65,3 +66,27 @@ class RequestLog(BaseModel):
     status_code = IntegerField()
     class Meta:
         table_name='request_logs'
+
+class User(BaseModel):
+    ROLE_USER = 'user'
+    ROLE_ADMIN = 'admin'
+    ROLES = (ROLE_USER, ROLE_ADMIN)
+
+    id = UUIDField(primary_key=True, default=uuid.uuid4)
+    username = CharField(80, unique=True)
+    password_hash = CharField(200)
+    role = CharField(10, default=ROLE_USER)
+
+    class Meta:
+            table_name = "users"
+
+    def set_password(self, plain: str) -> None:
+        salt = bcrypt.gensalt()
+        self.password_hash = bcrypt.hashpw(plain.encode(), salt).decode()
+
+    def check_password(self, plain: str) -> bool:
+        return bcrypt.checkpw(plain.encode(), self.password_hash.encode())
+ 
+    @property
+    def is_admin(self) -> bool:
+        return self.role == self.ROLE_ADMIN    
