@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app.limiter import limiter
 from app.db import User
-from playhouse.shortcuts import IntegrityError, model_to_dict
+from playhouse.shortcuts import IntegrityError
 
 users_bp = Blueprint('users', __name__)
 
@@ -34,3 +34,18 @@ def register_user():
     }
 
     return user_obj, 201
+
+@users_bp.post('/auth/login')
+def login():
+    body = request.get_json() or {}
+    username = body.get("username", "").strip()
+    password = body.get("password", "")
+
+    user = User.get(User.username == username)
+    user_obj = {
+        'id': str(user.id),
+        'username': user.username,
+        'role': user.role
+    }
+
+    return user_obj, 200 
