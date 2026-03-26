@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from app.auth import current_user, set_session
 from app.limiter import limiter
 from app.db import User
@@ -73,3 +73,8 @@ def me():
         "username": user.username,
         "role": user.role
     }), 200    
+
+@users_bp.post('/auth/logout')
+def logout():
+    session.clear()
+    return {"message": "logged out"}, 200

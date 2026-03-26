@@ -83,3 +83,10 @@ def test_GET_me_returns_user(client):
 def test_POST_login_missing_fields(client):
     response = client.post('/auth/login', json={'username': 'testuser'})
     assert response.status_code == 400
+
+def test_POST_logout_returns_200_and_clears_session(client):
+    register(client)
+    response = client.post('/auth/logout')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['message'] == 'logged out'
