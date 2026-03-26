@@ -26,6 +26,7 @@ def register_user():
     except IntegrityError:
         return jsonify({"message": "bad request"}), 400
     
+    set_session(user)
     # return specifically this object rather than whole user object
     # avoids returning password_hash
     user_obj = {

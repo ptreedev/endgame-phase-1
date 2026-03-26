@@ -40,6 +40,15 @@ def test_POST_register_invalid_role(client):
     response = register(client, role='superuser')
     assert response.status_code == 400
 
+def test_POST_register_sets_session(client):
+    register(client)
+    response = client.get('/auth/me')
+    data = response.get_json()
+    assert response.status_code == 200
+    assert data['username'] == 'testuser'
+    assert data['role'] == 'user'
+
+
 def test_POST_login(client):
     register(client)
     response = login(client)
@@ -53,24 +62,24 @@ def test_POST_login(client):
 
 def test_POST_login_wrong_password(client):
     register(client)
-    response = login(client, password="wrongpassword")
+    response = login(client, password='wrongpassword')
     assert response.status_code == 401
-    assert "invalid credentials" in response.get_json()["message"]
+    assert 'invalid credentials' in response.get_json()['message']
 
 def test_POST_login_unknown_user(client):
-    response = login(client, username="nobody")
+    response = login(client, username='nobody')
     assert response.status_code == 401
-    assert "invalid credentials" in response.get_json()["message"]
+    assert 'invalid credentials' in response.get_json()['message']
 
 def test_GET_me_returns_user(client):
     register(client)
     login(client)
-    response = client.get("/auth/me")
+    response = client.get('/auth/me')
     data = response.get_json()
     assert response.status_code == 200
-    assert data["username"] == "testuser"
-    assert data["role"] == "user"
+    assert data['username'] == 'testuser'
+    assert data['role'] == 'user'
 
 def test_POST_login_missing_fields(client):
-    response = client.post("/auth/login", json={"username": "testuser"})
+    response = client.post('/auth/login', json={'username': 'testuser'})
     assert response.status_code == 400
