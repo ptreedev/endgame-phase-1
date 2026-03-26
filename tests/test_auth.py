@@ -90,3 +90,12 @@ def test_POST_logout_returns_200_and_clears_session(client):
     assert response.status_code == 200
     data = response.get_json()
     assert data['message'] == 'logged out'
+
+def test_DECORATOR_login_required(client):
+    # make request to protected endpoint, 
+    # should return 401 if unauth and 200 if auth
+    unauth_response = client.get('/auth/me')
+    assert unauth_response.status_code == 401
+    register(client)
+    response = client.get('/auth/me')
+    assert response.status_code == 200
