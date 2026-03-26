@@ -51,3 +51,26 @@ def test_POST_login(client):
     assert 'secret123' not in data
     assert 'password_hash' not in data
 
+def test_POST_login_wrong_password(client):
+    register(client)
+    response = login(client, password="wrongpassword")
+    assert response.status_code == 401
+    assert "invalid credentials" in response.get_json()["message"]
+
+def test_POST_login_unknown_user(client):
+    response = login(client, username="nobody")
+    assert response.status_code == 401
+    assert "invalid credentials" in response.get_json()["message"]
+
+def test_GET_me_returns_user(client):
+    register(client)
+    login(client)
+    response = client.get("/auth/me")
+    data = response.get_json()
+    assert response.status_code == 200
+    assert data["username"] == "testuser"
+    assert data["role"] == "user"
+
+def test_POST_login_missing_fields(client):
+    response = client.post("/auth/login", json={"username": "testuser"})
+    assert response.status_code == 400

@@ -1,0 +1,18 @@
+from flask import session
+
+def set_session(user) -> None:
+    session.clear()
+    session["user_id"] = str(user.id)
+    session["role"] = user.role
+
+
+def current_user():
+    from app.db import User
+    uid = session.get("user_id")
+    if uid is None:
+        return None
+    try:
+        return User.get_by_id(uid)
+    except Exception:
+        session.clear()
+        return None

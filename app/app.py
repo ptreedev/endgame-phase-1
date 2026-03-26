@@ -12,6 +12,8 @@ from app.routes.auth import users_bp
 import os
 
 app = Flask(__name__)
+
+app.secret_key = os.getenv("SECRET_KEY")
 limiter.init_app(app)
 CORS(app, origins=[os.getenv('CORS_ORIGIN'), os.getenv('DEV_CORS_ORIGIN')])
 

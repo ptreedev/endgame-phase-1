@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from app.auth import current_user, set_session
 from app.limiter import limiter
 from app.db import User
 from playhouse.shortcuts import IntegrityError
@@ -41,11 +42,33 @@ def login():
     username = body.get("username", "").strip()
     password = body.get("password", "")
 
-    user = User.get(User.username == username)
+    if not username or not password:
+        return jsonify({"message": "bad request"}), 400
+
+    try:
+        user = User.get(User.username == username)
+    except User.DoesNotExist:
+        return jsonify({"message": "invalid credentials"}), 401
+
+
+    if not user.check_password(password):
+        return jsonify({"message": "invalid credentials"}), 401
+    
     user_obj = {
         'id': str(user.id),
         'username': user.username,
         'role': user.role
     }
+    set_session(user)
 
     return user_obj, 200 
+
+
+@users_bp.get('/auth/me')
+def me():
+    user = current_user()
+    return jsonify({
+        "id": str(user.id),
+        "username": user.username,
+        "role": user.role
+    }), 200    
