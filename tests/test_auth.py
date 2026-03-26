@@ -90,8 +90,10 @@ def test_DECORATOR_login_required(client):
     assert response.status_code == 200
 
 def test_DECORATOR_admin_required(client):
-    # protect logsw endpoint with admin decorator
+    # protect logs endpoint with admin decorator
     register(client)
-    login(client)
     unauth_response = client.get('/requests')
     assert unauth_response.status_code == 403
+    register(client, username='admin', role='admin')
+    response = client.get('/requests')
+    assert response.status_code == 200
