@@ -1,16 +1,5 @@
-def register(client, username='testuser', password='secret123', role='user'):
-    return client.post('/auth/register', json={
-        'username': username,
-        'password': password,
-        'role': role
-    })
+from tests.utils.auth import register, login
 
-def login(client, username='testuser', password='secret123', role='user'):
-    return client.post('/auth/login', json={
-        'username': username,
-        'password': password,
-        'role': role
-    })
 
 def test_POST_register_user(client):
     response = register(client)
@@ -99,3 +88,10 @@ def test_DECORATOR_login_required(client):
     register(client)
     response = client.get('/auth/me')
     assert response.status_code == 200
+
+def test_DECORATOR_admin_required(client):
+    # protect logsw endpoint with admin decorator
+    register(client)
+    login(client)
+    unauth_response = client.get('/requests')
+    assert unauth_response.status_code == 403

@@ -26,3 +26,13 @@ def login_required(f):
             return {'message': 'unauthorised'}, 401
         return f(*args, **kwargs)
     return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('user_id'):
+            return {'message': 'unauthorised'}, 401
+        if session.get('role') != 'admin':
+            return {'message': 'forbidden'}, 403
+        return f(*args, **kwargs)
+    return decorated
