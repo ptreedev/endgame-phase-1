@@ -11,16 +11,18 @@ def register_user():
     body = request.get_json()
     username = body.get('username', '').strip()
     password = body.get('password', '')
-    role = body.get('role', User.ROLE_USER)
+    
+    if 'role' in body:
+        return jsonify({"message": "bad request"}), 400
 
     if not username or not password:
         return jsonify({'message': 'bad request'}), 400
     
-    if role not in User.ROLES:
-        return jsonify({'message': 'bad request'}), 400
+    # if role not in User.ROLES:
+    #     return jsonify({'message': 'bad request'}), 400
 
     try:
-        user = User(username=username, role=role)
+        user = User(username=username, role=User.ROLE_USER)
         user.set_password(password)
         user.save(force_insert=True)
     except IntegrityError:

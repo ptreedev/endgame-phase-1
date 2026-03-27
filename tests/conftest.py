@@ -1,6 +1,7 @@
 import pytest
 from app.db import *
 from app.app import app
+from tests.consts import USERNAME, PASSWORD
 
 
 @pytest.fixture()
@@ -9,6 +10,9 @@ def setup_test_db():
     database.create_tables([Coin, Duty, CoinDuty, RequestLog, User])
     Coin.create(name='automate', description='automation')
     Duty.create(name='D1', description='duty 1')
+    admin = User(username=USERNAME, role=User.ROLE_ADMIN)
+    admin.set_password(PASSWORD)
+    admin.save(force_insert=True)
     
     yield
 

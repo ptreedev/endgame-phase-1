@@ -1,4 +1,4 @@
-from tests.utils.auth import register, login
+from tests.utils.auth import login_admin, register, login
 
 
 def test_POST_register_user(client):
@@ -26,7 +26,12 @@ def test_POST_register_missing_password(client):
     assert response.status_code == 400
  
 def test_POST_register_invalid_role(client):
-    response = register(client, role='superuser')
+    user_body = {
+        'username': 'superadmin',
+        'password': 'password',
+        'role': 'superadmin'
+    }
+    response = client.post('/auth/register', json=user_body)
     assert response.status_code == 400
 
 def test_POST_register_sets_session(client):
@@ -36,6 +41,20 @@ def test_POST_register_sets_session(client):
     assert response.status_code == 200
     assert data['username'] == 'testuser'
     assert data['role'] == 'user'
+
+# admin_role should not be set from calling the endpoint
+def test_POST_register_admin_role_unavailable(client):
+    user_body = {
+        'username': 'admin',
+        'password': 'password',
+        'role': 'admin'
+    }
+    response = client.post('/auth/register', json=user_body)
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data['message'] == 'bad request'
+    
+
 
 
 def test_POST_login(client):
@@ -94,6 +113,6 @@ def test_DECORATOR_admin_required(client):
     register(client)
     unauth_response = client.get('/requests')
     assert unauth_response.status_code == 403
-    register(client, username='admin', role='admin')
+    login_admin(client)
     response = client.get('/requests')
     assert response.status_code == 200
