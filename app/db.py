@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from dotenv import load_dotenv 
 import os
 from peewee import *
@@ -89,4 +91,24 @@ class User(BaseModel):
  
     @property
     def is_admin(self) -> bool:
-        return self.role == self.ROLE_ADMIN    
+        return self.role == self.ROLE_ADMIN 
+
+    failed_attempts = IntegerField(default=0)
+    locked_until    = DateTimeField(null=True)
+
+    @property
+    def is_locked(self) -> bool:
+        if self.locked_until is None:
+            return False
+        return datetime.now() < self.locked_until
+
+    def record_failed_attempt(self) -> None:
+        self.failed_attempts += 1
+        if self.failed_attempts >= 5:
+            self.locked_until = datetime.now() + timedelta(minutes=15)
+        self.save()
+
+    def reset_failed_attempts(self) -> None:
+        self.failed_attempts = 0
+        self.locked_until = None
+        self.save()   

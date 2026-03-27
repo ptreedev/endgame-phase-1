@@ -116,3 +116,35 @@ def test_DECORATOR_admin_required(client):
     login_admin(client)
     response = client.get('/requests')
     assert response.status_code == 200
+
+def test_USER_account_locks_after_5_failed_attempts(client):
+    register(client)
+    for _ in range(5):
+        login(client, password="wrongpassword")
+    response = login(client, password="wrongpassword")
+    assert response.status_code == 423
+    assert "account locked" in response.get_json()["message"]
+
+def test_USER_locked_account_rejects_correct_password(client):
+    register(client)
+    for _ in range(5):
+        login(client, password="wrongpassword")
+    response = login(client, password="secret123")
+    assert response.status_code == 423
+
+def test_USER_failed_attempts_reset_on_successful_login(client):
+    register(client)
+    for _ in range(3):
+        login(client, password="wrongpassword")
+    login(client, password="secret123")
+    from app.db import User
+    user = User.get(User.username == "testuser")
+    assert user.failed_attempts == 0
+    assert user.locked_until is None
+
+def test_USER_account_not_locked_before_threshold(client):
+    register(client)
+    for _ in range(4):
+        login(client, password="wrongpassword")
+    response = login(client, password="secret123")
+    assert response.status_code == 200
