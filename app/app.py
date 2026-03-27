@@ -3,8 +3,6 @@ from flask import Flask, request, g
 from flask_cors import CORS
 from app.db import *
 from app.limiter import limiter
-from playhouse.shortcuts import model_to_dict
-from peewee import IntegrityError, DoesNotExist
 from app.routes.logs import logs_bp
 from app.routes.coins import coins_bp
 from app.routes.duties import duties_bp
