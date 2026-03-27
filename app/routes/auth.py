@@ -7,6 +7,7 @@ from playhouse.shortcuts import IntegrityError
 users_bp = Blueprint('users', __name__)
 
 @users_bp.post('/auth/register')
+@limiter.limit("1 per second; 5 per minute; 50 per hour")
 def register_user():
     body = request.get_json()
     username = body.get('username', '').strip()
@@ -40,6 +41,7 @@ def register_user():
     return user_obj, 201
 
 @users_bp.post('/auth/login')
+@limiter.limit("10 per minute; 50 per hour")
 def login():
     body = request.get_json() or {}
     username = body.get('username', '').strip()
