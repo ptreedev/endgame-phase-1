@@ -7,6 +7,9 @@
     # }, ...]
     # if calling a duty it should bring back associated coins
 
+from tests.utils.auth import login_admin
+
+
 def test_GET_all_duties(client):
     response = client.get('/duties')
     assert response.status_code == 200
@@ -32,6 +35,7 @@ def test_GET_duty_by_invalid_id(client):
     assert 'Resource not found' in response.text
 
 def test_GET_duty_by_id_gets_associated_coins(client):
+    login_admin(client)
     new_duty = {
         'name': 'D3',
         'description': 'duty 3'
@@ -169,6 +173,7 @@ def test_PATCH_duty_invalid_id(client):
     assert 'Resource not found' in response.text
 
 def test_GET_duty_returns_associated_coins(client):
+    login_admin(client)
     new_duty = {
         'name': 'D3',
         'description': 'duty 3'

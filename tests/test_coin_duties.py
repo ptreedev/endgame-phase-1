@@ -1,4 +1,8 @@
+from tests.utils.auth import login_admin
+
+
 def test_PATCH_COIN_associate_coin_duty(client):
+    login_admin(client)
     new_duty = {
         'name': 'D2',
         'description': 'duty 2'
@@ -25,6 +29,7 @@ def test_PATCH_COIN_associate_coin_duty(client):
     }
 
 def test_PATCH_COIN_associate_coin_duty_missing_item(client):
+    login_admin(client)
     new_coin = {
         'name': 'secure',
         'description': 'security'

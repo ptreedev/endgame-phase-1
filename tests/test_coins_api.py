@@ -1,4 +1,5 @@
-from tests.conftest import client
+
+from tests.utils.auth import login_admin
 
 
 def test_GET_all_coins(client):
@@ -9,6 +10,7 @@ def test_GET_all_coins(client):
     assert 'false' in response.text
 
 def test_GET_all_coins_gets_associated_duties(client):
+    login_admin(client)
     new_duty = {
         'name': 'D3',
         'description': 'duty 3'
@@ -58,6 +60,7 @@ def test_GET_coin_by_invalid_id(client):
     assert response.status_code == 404
 
 def test_POST_coin(client):
+    login_admin(client)
     new_coin = {
         'name': 'houston',
         'description': 'houstonation'
@@ -70,6 +73,7 @@ def test_POST_coin(client):
         assert row in created_coin
 
 def test_POST_coin_no_duplication(client):
+    login_admin(client)
     dupe_coin = {
         'name': 'automate',
         'description': 'automation'
@@ -79,6 +83,7 @@ def test_POST_coin_no_duplication(client):
     assert 'bad request' in response.text
 
 def test_POST_coin_missing_field(client):
+    login_admin(client)
     incomplete_coin = {
         'name': 'banana'
     }

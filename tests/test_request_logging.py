@@ -1,14 +1,14 @@
-from tests.utils.auth import register
+from tests.utils.auth import login_admin
 
-# Figure out a way to use fixtures for register even though. I'm already using them in conftest
+# Figure out a way to use fixtures for login_admin even though. I'm already using them in conftest
 
 def test_GET_requests_returns_200(client):
-    register(client, role='admin')
+    login_admin(client)
     response = client.get('/requests')
     assert response.status_code == 200
 
 def test_GET_requests_returns_correct_fields(client):
-    register(client, role='admin')
+    login_admin(client)
     client.get('/coins')
     response = client.get('/requests')
     data = response.get_json()
@@ -19,7 +19,7 @@ def test_GET_requests_returns_correct_fields(client):
     assert 'status_code' in entry
 
 def test_GET_requests_logs_correct_method_code_path(client):
-    register(client, role='admin')
+    login_admin(client)
     client.get('/coins')
     response = client.get('/requests')
     data = response.get_json()
@@ -29,7 +29,7 @@ def test_GET_requests_logs_correct_method_code_path(client):
     assert entry['status_code'] == 200
 
 def test_GET_requests_logs_different_request(client):
-    register(client, role='admin')
+    login_admin(client)
     client.get('/duties')
     response = client.get('/requests')
     data = response.get_json()
@@ -39,7 +39,7 @@ def test_GET_requests_logs_different_request(client):
     assert entry['status_code'] == 200
 
 def test_GET_requests_does_not_log_requests_endpoint(client):
-    register(client, role='admin')
+    login_admin(client)
     client.get('/requests')
     response = client.get('/requests')
     data = response.get_json()
@@ -47,7 +47,7 @@ def test_GET_requests_does_not_log_requests_endpoint(client):
     assert len(data) == 1
 
 def test_GET_requests_logs_only_last_100_requests(client):
-    register(client, role='admin')
+    login_admin(client)
     for i in range(150):
         client.get('/coins')
     response = client.get('/requests')
@@ -55,7 +55,7 @@ def test_GET_requests_logs_only_last_100_requests(client):
     assert len(data) == 100
 
 def test_GET_requests_returns_latest_request_first(client):
-    register(client, role='admin')
+    login_admin(client)
     client.get('/coins')
     client.get('/duties')
     response = client.get('/requests')

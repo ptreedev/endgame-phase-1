@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from app.auth import admin_required
 from app.limiter import limiter
 from app.db import Coin, Duty, CoinDuty
 from playhouse.shortcuts import model_to_dict
@@ -25,6 +26,7 @@ def get_coin_by_id(coin_id):
     
 @coins_bp.post('/coins')
 @limiter.limit("10 per minute")
+@admin_required
 def create_coin():
     try:
         body = request.get_json()
