@@ -75,6 +75,7 @@ def test_GET_duty_by_id_gets_associated_coins(client):
             assert any(coin['id'] == coin_id for coin in duty_data['coins'])
 
 def test_POST_duty(client):
+    login_admin(client)
     new_duty = {
         'name': 'D2',
         'description': 'duty 2'
@@ -87,6 +88,7 @@ def test_POST_duty(client):
         assert row in created_duty
 
 def test_POST_duty_no_duplication(client):
+    login_admin(client)
     dupe_duty = {
         'name': 'D1',
         'description': 'duty 1'
@@ -96,6 +98,7 @@ def test_POST_duty_no_duplication(client):
     assert 'bad request' in response.text
 
 def test_POST_duty_missing_field(client):
+    login_admin(client)
     incomplete_duty = {
         'name': 'D3'
     }
