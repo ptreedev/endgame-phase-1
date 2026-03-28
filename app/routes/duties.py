@@ -56,6 +56,7 @@ def create_duty():
 
 
 @duties_bp.delete('/duty/<duty_id>')
+@admin_required
 def delete_duty_by_id(duty_id):
     if Duty.delete_by_id(duty_id) == 0:
         return {'message': 'resource not found'}, 404
@@ -63,6 +64,7 @@ def delete_duty_by_id(duty_id):
 
 
 @duties_bp.patch('/duty/<duty_id>')
+@admin_required
 def patch_duty_by_id(duty_id):
     body = request.get_json()
     if not body:

@@ -116,6 +116,7 @@ def test_POST_duty_missing_field(client):
 #     assert 'bad request' in response.text
 
 def test_DELETE_duty_by_id(client):
+    login_admin(client)
     duties = client.get('/duties')
     duty_id = duties.get_json()[0]['id']
     response = client.delete(f'/duty/{duty_id}')
@@ -124,6 +125,7 @@ def test_DELETE_duty_by_id(client):
     assert response_2.status_code == 404
 
 def test_PATCH_duty_one_field(client):
+    login_admin(client)
     patch_body = {
         'name': 'D5'
     }    
@@ -136,6 +138,7 @@ def test_PATCH_duty_one_field(client):
     assert 'duty 1' in updated_duty
 
 def test_PATCH_duty_by_id(client):
+    login_admin(client)
     patch_body = {
         'name': 'D1',
         'description': 'duty 1 updated'
@@ -149,6 +152,7 @@ def test_PATCH_duty_by_id(client):
     assert 'duty 1 updated' in updated_duty
 
 def test_PATCH_duty_no_fields(client):
+    login_admin(client)
     patch_body = { }    
     duties = client.get('/duties')
     duty_id = duties.get_json()[0]['id']
@@ -157,6 +161,7 @@ def test_PATCH_duty_no_fields(client):
     assert 'bad request' in response.text
 
 def test_PATCH_duty_invalid_field(client):
+    login_admin(client)
     patch_body = {
         'invalid_field': 'some_value'
     }    
@@ -167,6 +172,7 @@ def test_PATCH_duty_invalid_field(client):
     assert 'bad request' in response.text
 
 def test_PATCH_duty_invalid_id(client):
+    login_admin(client)
     patch_body = {
         'name': 'D1-updated'
     }    
