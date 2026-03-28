@@ -36,6 +36,7 @@ def create_coin():
         return {'error': 'bad request', 'message': 'bad or missing fields'}, 400
 
 @coins_bp.delete('/coin/<coin_id>')
+@admin_required
 def delete_coin_by_id(coin_id):
     if Coin.delete_by_id(coin_id) == 0:
         return {'message': 'resource not found'}, 404

@@ -105,6 +105,7 @@ def test_POST_coin_missing_field(client):
 #     assert 'onerror="alert(\'xss\')"' not in created_coin
 
 def test_DELETE_coin_by_id(client):
+    login_admin(client)
     coins = client.get('/coins')
     coin_id = coins.get_json()[0]['id']
     response = client.delete(f'/coin/{coin_id}')
