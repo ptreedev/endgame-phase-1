@@ -115,6 +115,7 @@ def test_DELETE_coin_by_id(client):
     assert response_2.status_code == 404
 
 def test_PATCH_coin_name_by_id(client):
+    login_admin(client)
     patch_body = {
         'name': 'autoauto'
     }
@@ -126,6 +127,7 @@ def test_PATCH_coin_name_by_id(client):
     assert 'automation' in response.text
 
 def test_PATCH_coin_desc_by_id(client):
+    login_admin(client)
     patch_body = {
         'description': 'bananation'
     }
@@ -138,6 +140,7 @@ def test_PATCH_coin_desc_by_id(client):
     assert 'bananation' in updated_coin
 
 def test_PATCH_coin_2_fields(client):
+    login_admin(client)
     patch_body = {
         'name': 'autoauto',
         'description': 'bananation'
@@ -150,6 +153,7 @@ def test_PATCH_coin_2_fields(client):
     assert 'bananation' in response.text
 
 def test_PATCH_coin_no_fields(client):
+    login_admin(client)
     patch_body = { }    
     coins = client.get('/coins')
     coin_id = coins.get_json()[0]['id']
@@ -158,6 +162,7 @@ def test_PATCH_coin_no_fields(client):
     assert 'bad request' in response.text
 
 def test_PATCH_coin_invalid_field(client):
+    login_admin(client)
     patch_body = {
         'invalid_field': 'some_value'
     }    
@@ -168,6 +173,7 @@ def test_PATCH_coin_invalid_field(client):
     assert 'bad request' in response.text
 
 def test_PATCH_coin_invalid_id(client):
+    login_admin(client)
     patch_body = {
         'name': 'autoauto'
     }    
@@ -176,6 +182,7 @@ def test_PATCH_coin_invalid_id(client):
     assert response.status_code == 404
 
 def test_PATCH_coin_update_complete(client):
+    login_admin(client)
     patch_body = {
         'complete': 'true'
     }    

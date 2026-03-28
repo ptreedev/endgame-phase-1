@@ -43,6 +43,7 @@ def delete_coin_by_id(coin_id):
     return '', 204
 
 @coins_bp.patch('/coin/<coin_id>')
+@admin_required
 def patch_coin_by_id(coin_id):
     body = request.get_json()
     if not body:
