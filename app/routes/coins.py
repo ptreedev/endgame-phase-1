@@ -1,7 +1,7 @@
-from flask import Blueprint, request
-from app.auth import admin_required
+from flask import Blueprint, request, session
+from app.auth import admin_required, login_required
 from app.limiter import limiter
-from app.db import Coin, Duty, CoinDuty
+from app.db import Coin, Duty, CoinDuty, User
 from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError, DoesNotExist
 
@@ -43,13 +43,24 @@ def delete_coin_by_id(coin_id):
     return '', 204
 
 @coins_bp.patch('/coin/<coin_id>')
-@admin_required
+@login_required
 def patch_coin_by_id(coin_id):
     body = request.get_json()
     if not body:
         return {'message': 'bad request'}, 400
 
-    allowed_fields = {'name', 'description', 'complete'}
+    admin_fields  = {'name', 'description'}
+    user_fields   = {'complete'}
+    allowed_fields = admin_fields | user_fields
+
+    requested_fields = set(body.keys())
+
+    if not requested_fields.issubset(allowed_fields):
+        return {'message': 'bad request'}, 400
+
+    if requested_fields & admin_fields and session.get('role') != User.ROLE_ADMIN:
+        return {'message': 'forbidden'}, 403
+    
     update_data = {
         getattr(Coin, key): value
         for key, value in body.items()

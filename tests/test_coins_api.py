@@ -1,5 +1,5 @@
 
-from tests.utils.auth import login_admin
+from tests.utils.auth import login, login_admin, register
 
 
 def test_GET_all_coins(client):
@@ -193,3 +193,29 @@ def test_PATCH_coin_update_complete(client):
     assert 'true' in response.text
     assert 'automate' in response.text
     assert 'automation' in response.text
+
+def test_PATCH_coin_non_admin_user_can_update_complete_field(client):
+    register(client)
+    patch_body = {
+        'complete': 'true'
+    }    
+    coins = client.get('/coins')
+    coin_id = coins.get_json()[0]['id']
+    response = client.patch(f'/coin/{coin_id}', json = patch_body)
+    assert response.status_code == 200
+    assert 'true' in response.text
+    assert 'automate' in response.text
+    assert 'automation' in response.text
+
+
+def test_PATCH_coin_non_admin_user_returns_403_when_patching_other_fields(client):
+    register(client)
+    patch_body = {
+        'name': 'autoauto',
+        'description': 'bananation'
+    }    
+    coins = client.get('/coins')
+    coin_id = coins.get_json()[0]['id']
+    response = client.patch(f'/coin/{coin_id}', json = patch_body)
+    assert response.status_code == 403
+    assert 'forbidden' in response.text
