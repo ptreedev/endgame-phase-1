@@ -64,6 +64,7 @@ def patch_coin_by_id(coin_id):
     return model_to_dict(Coin.get_by_id(coin_id)), 200
 
 @coins_bp.patch('/coin/<coin_id>/duties')
+@admin_required
 def associate_coin_duty(coin_id):
     try:
         body = request.get_json()
