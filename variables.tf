@@ -32,3 +32,9 @@ variable "cors_origin" {
   description = "The allowed CORS origin for the web application"
   type        = string
 }
+
+variable "secret_key" {
+  description = "A secret key for the web application, used for session management and other security-related functions."
+  type        = string
+  sensitive   = true
+}

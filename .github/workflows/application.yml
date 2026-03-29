@@ -57,6 +57,7 @@ jobs:
           DB_NAME=${{ secrets.DB_NAME }}
           DB_PORT=${{ secrets.DB_PORT }}
           CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
           EOF
 
       # Copy .env to the EC2 server
