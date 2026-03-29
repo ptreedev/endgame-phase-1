@@ -106,15 +106,6 @@ def test_POST_duty_missing_field(client):
     assert response.status_code == 400
     assert 'bad request' in response.text
 
-# def test_POST_duty_invalid_name_length(client):
-#     invalid_duty = {
-#         'name': 'D1234567890',
-#         'description': 'duty 1'
-#     }
-#     response = client.post('/duties', json=invalid_duty)
-#     assert response.status_code == 400
-#     assert 'bad request' in response.text
-
 def test_DELETE_duty_by_id(client):
     login_admin(client)
     duties = client.get('/duties')
@@ -174,7 +165,7 @@ def test_PATCH_duty_invalid_field(client):
 def test_PATCH_duty_invalid_id(client):
     login_admin(client)
     patch_body = {
-        'name': 'D1-updated'
+        'name': 'D1'
     }    
     invalid_id = 9999
     response = client.patch(f'/duty/{invalid_id}', json=patch_body)
@@ -239,3 +230,59 @@ def test_v2_GET_duty_by_invalid_name(client):
     response = client.get(f'/v2/duty/{invalid_name}')
     assert response.status_code == 404
     assert 'Resource not found' in response.text
+
+def test_POST_duty_unknown_field_returns_400(client):
+    login_admin(client)
+    response = client.post('/duties', json={
+        'name': 'D2',
+        'description': 'duty 2',
+        'extra': 'field'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_PATCH_duty_unknown_field_returns_400(client):
+    login_admin(client)
+    duties = client.get('/duties')
+    duty_id = duties.get_json()[0]['id']
+    response = client.patch(f'/duty/{duty_id}', json={'unknown_field': 'value'})
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_POST_duty_lowercase_name_returns_400(client):
+    login_admin(client)
+    response = client.post('/duties', json={
+        'name': 'd2',
+        'description': 'duty 2'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_POST_duty_name_too_long_returns_400(client):
+    login_admin(client)
+    response = client.post('/duties', json={
+        'name': 'D1234',
+        'description': 'duty 1'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_POST_duty_empty_name_returns_400(client):
+    login_admin(client)
+    response = client.post('/duties', json={
+        'name': '',
+        'description': 'duty 2'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+# Sanitisation — whitespace stripped from description
+def test_POST_duty_whitespace_stripped_from_description(client):
+    login_admin(client)
+    response = client.post('/duties', json={
+        'name': 'D2',
+        'description': '  duty 2  '
+    })
+    assert response.status_code == 201
+    assert response.get_json()['description'] == 'duty 2'
+ 

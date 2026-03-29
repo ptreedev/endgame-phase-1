@@ -91,19 +91,6 @@ def test_POST_coin_missing_field(client):
     assert response.status_code == 400
     assert 'bad request' in response.text
 
-# def test_POST_coin_sanitized_input(client):
-#     unsanitized_coin = {
-#         'name': '<script>alert("xss")</script>',
-#         'description': '<img src="x" onerror="alert(\'xss\')">'
-#     }
-#     response = client.post('/coins', json = unsanitized_coin)
-#     created_coin = response.data.decode()
-#     assert response.status_code == 201
-#     assert '<script>' not in created_coin
-#     assert '<img' not in created_coin
-#     assert 'alert("xss")' not in created_coin
-#     assert 'onerror="alert(\'xss\')"' not in created_coin
-
 def test_DELETE_coin_by_id(client):
     login_admin(client)
     coins = client.get('/coins')
@@ -219,3 +206,93 @@ def test_PATCH_coin_non_admin_user_returns_403_when_patching_other_fields(client
     response = client.patch(f'/coin/{coin_id}', json = patch_body)
     assert response.status_code == 403
     assert 'forbidden' in response.text
+
+def test_POST_coin_unknown_field_returns_400(client):
+    login_admin(client)
+    response = client.post('/coins', json={
+        'name': 'houston',
+        'description': 'houstonation',
+        'malicious': 'value'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_PATCH_coin_unknown_field_returns_400(client):
+    login_admin(client)
+    coins = client.get('/coins')
+    coin_id = coins.get_json()[0]['id']
+    response = client.patch(f'/coin/{coin_id}', json={'unknown_field': 'value'})
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+# Validation — XSS attempt in coin fields returns 400
+def test_POST_coin_xss_in_name_returns_400(client):
+    login_admin(client)
+    response = client.post('/coins', json={
+        'name': '<script>alert(1)</script>',
+        'description': 'valid description'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_POST_coin_xss_in_description_returns_400(client):
+    login_admin(client)
+    response = client.post('/coins', json={
+        'name': 'validname',
+        'description': '<img src=x onerror=alert(1)>'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_PATCH_coin_xss_in_name_returns_400(client):
+    login_admin(client)
+    coins = client.get('/coins')
+    coin_id = coins.get_json()[0]['id']
+    response = client.patch(f'/coin/{coin_id}', json={
+        'name': '<script>alert(1)</script>'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+
+def test_POST_coin_empty_name_returns_400(client):
+    login_admin(client)
+    response = client.post('/coins', json={
+        'name': '',
+        'description': 'valid description'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_POST_coin_empty_description_returns_400(client):
+    login_admin(client)
+    response = client.post('/coins', json={
+        'name': 'validname',
+        'description': ''
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_POST_coin_no_body_returns_400(client):
+    login_admin(client)
+    response = client.post('/coins', json={})
+    assert response.status_code == 400
+    assert 'bad request' in response.text
+ 
+def test_POST_coin_whitespace_stripped_from_name(client):
+    login_admin(client)
+    response = client.post('/coins', json={
+        'name': '  houston  ',
+        'description': 'houstonation'
+    })
+    assert response.status_code == 201
+    assert response.get_json()['name'] == 'houston'
+ 
+def test_POST_coin_whitespace_stripped_from_description(client):
+    login_admin(client)
+    response = client.post('/coins', json={
+        'name': 'houston',
+        'description': '  houstonation  '
+    })
+    assert response.status_code == 201
+    assert response.get_json()['description'] == 'houstonation'
+ 

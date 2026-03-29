@@ -2,10 +2,16 @@ from flask import Blueprint, request
 from app.auth import admin_required
 from app.limiter import limiter
 from app.db import Coin, Duty, CoinDuty
+from app.schemas import DutyCreateSchema, DutyPatchSchema
 from playhouse.shortcuts import model_to_dict
 from peewee import IntegrityError, DoesNotExist, DataError
+from marshmallow import ValidationError, RAISE
 
 duties_bp = Blueprint('duties', __name__)
+
+duty_create_schema = DutyCreateSchema()
+duty_patch_schema  = DutyPatchSchema()
+
 
 def _format_duty_with_coins(duty):
     coins = Coin.select().join(CoinDuty).where(CoinDuty.duty == duty)
@@ -44,15 +50,19 @@ def get_duty_by_name(duty_name):
 
 
 @duties_bp.post('/duties')
-@limiter.limit("10 per minute")
 @admin_required
+@limiter.limit("10 per minute")
 def create_duty():
     try:
-        body = request.get_json()
-        created_duty = Duty.create(name=body['name'], description=body['description'])
+        data = duty_create_schema.load(request.get_json() or {}, unknown=RAISE)
+    except ValidationError as e:
+        return {'message': 'bad request', 'errors': e.messages}, 400
+
+    try:
+        created_duty = Duty.create(**data)
         return model_to_dict(created_duty), 201
-    except (IntegrityError, KeyError, DataError):
-        return {'error': 'bad request', 'message': 'bad or missing fields'}, 400
+    except (IntegrityError, DataError):
+        return {'message': 'bad request', 'errors': {'name': ['already exists or invalid']}}, 400
 
 
 @duties_bp.delete('/duty/<duty_id>')
@@ -66,18 +76,19 @@ def delete_duty_by_id(duty_id):
 @duties_bp.patch('/duty/<duty_id>')
 @admin_required
 def patch_duty_by_id(duty_id):
-    body = request.get_json()
-    if not body:
+    try:
+        data = duty_patch_schema.load(
+            request.get_json() or {},
+            partial=True,
+            unknown=RAISE
+        )
+    except ValidationError as e:
+        return {'message': 'bad request', 'errors': e.messages}, 400
+
+    if not data:
         return {'message': 'bad request'}, 400
 
-    allowed_fields = {'name', 'description'}
-    update_data = {
-        getattr(Duty, key): value
-        for key, value in body.items()
-        if key in allowed_fields
-    }
-    if not update_data:
-        return {'message': 'bad request'}, 400
+    update_data = {getattr(Duty, key): value for key, value in data.items()}
 
     try:
         rows_updated = Duty.update(update_data).where(Duty.id == duty_id).execute()

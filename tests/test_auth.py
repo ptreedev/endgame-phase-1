@@ -148,3 +148,43 @@ def test_USER_account_not_locked_before_threshold(client):
         login(client, password="wrongpassword")
     response = login(client, password="secret123")
     assert response.status_code == 200
+
+def test_POST_register_unknown_field_returns_400(client):
+    response = client.post('/auth/register', json={
+        'username': 'testuser',
+        'password': 'secret123',
+        'extra': 'field'
+    })
+    assert response.status_code == 400
+ 
+def test_POST_register_short_password_returns_400(client):
+    response = client.post('/auth/register', json={
+        'username': 'testuser',
+        'password': 'short'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.get_json()['message']
+ 
+def test_POST_register_invalid_username_characters_returns_400(client):
+    response = client.post('/auth/register', json={
+        'username': 'test user!',
+        'password': 'secret123'
+    })
+    assert response.status_code == 400
+    assert 'bad request' in response.get_json()['message']
+ 
+def test_POST_register_xss_username_returns_400(client):
+    response = client.post('/auth/register', json={
+        'username': '<script>alert(1)</script>',
+        'password': 'secret123'
+    })
+    assert response.status_code == 400
+ 
+def test_POST_register_whitespace_stripped_from_username(client):
+    response = client.post('/auth/register', json={
+        'username': '  testuser  ',
+        'password': 'secret123'
+    })
+    assert response.status_code == 201
+    assert response.get_json()['username'] == 'testuser'
+ 

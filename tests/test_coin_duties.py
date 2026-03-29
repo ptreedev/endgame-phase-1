@@ -43,6 +43,9 @@ def test_PATCH_COIN_associate_coin_duty_missing_item(client):
     })
     assert association_response.status_code == 400
     assert association_response.get_json() == {
+        'errors': {
+            'duty_id': ['Missing data for required field.']
+            }, 
         'message': 'bad request'
     }
     
