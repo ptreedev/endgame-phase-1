@@ -31,7 +31,7 @@ data "aws_ami" "ubuntu" {
 # Register the public key with AWS — the private key never touches Terraform
 # or the runner. It is stored in the GitHub repository secrets and used by the runner to connect to the EC2 instance.
 resource "aws_key_pair" "deployer" {
-  key_name   = "terraform-key"
+  key_name   = "pete-l-terraform-key"
   public_key = var.ssh_public_key
 }
 
