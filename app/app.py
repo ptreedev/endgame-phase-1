@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 app.secret_key = os.getenv("SECRET_KEY")
 limiter.init_app(app)
-CORS(app, origins=[os.getenv('CORS_ORIGIN'), os.getenv('DEV_CORS_ORIGIN')])
+CORS(app, origins=[os.getenv('CORS_ORIGIN'), os.getenv('DEV_CORS_ORIGIN')], supports_credentials=True)
 
 app.register_blueprint(logs_bp)
 app.register_blueprint(coins_bp)
